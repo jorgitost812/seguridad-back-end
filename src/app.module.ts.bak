@@ -1,0 +1,33 @@
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProvinciasModule } from './provincias/provincias.module';
+import { RolesModule } from './roles/roles.module';
+import { funcionesRolesModule } from './funcionesroles/funcionesroles.module';
+import { MunicipiosModule } from './municipios/municipios.module';
+import { JovenclubModule } from './jcs/jcs.module';
+import { PcModule } from './pcs/pcs.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
+import { AuthModule } from './auth/auth.module';
+
+
+@Module({
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'postgres',
+      password: 'postgres',
+      database: 'museo',
+      entities: ['dist/**/*.entity{.ts,.js}'],
+      synchronize: true,
+      retryDelay: 3000,
+      retryAttempts: 10
+    }),
+    ProvinciasModule, MunicipiosModule, JovenclubModule, PcModule,  
+    RolesModule,funcionesRolesModule, UsuariosModule, AuthModule
+  ],
+  controllers: [],
+  providers: [],
+})
+export class AppModule {}

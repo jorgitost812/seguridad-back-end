@@ -1,0 +1,60 @@
+import { Controller, Get, Param, Post, Body, Put, Delete, UseGuards , Res} from '@nestjs/common';
+import { Request, Response, Application } from 'express';
+import { cAccesosService} from '../services/caccesos.service';
+import { JwtAuthGuard } from "../../auth/jwt-auth.guard";
+import { cAccesos } from '../entities/caccesos.entity';
+
+@Controller('api/accesos')
+export class cAccesosController {
+
+    constructor(
+       private caccesosService: cAccesosService 
+    ) {}
+	
+    @Get()
+    getAll(){
+        return this.caccesosService.findAll();
+        
+    }
+    @Get(':id')
+    getOne(@Param('id') id: number){
+        return this.caccesosService.findOne(id);
+        
+    }
+
+    @Get('by/:json')
+    async getBy(@Param() json: string):Promise<cAccesos[]>{
+        return await this.caccesosService.findBy(json);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post()
+    create(@Body() body: any){
+        return this.caccesosService.create(body); 
+        // return body;
+    }
+
+    @Get('/export/pdf/:json')
+    async getPDF(@Param() json: string, @Res() res: Response): Promise<void> {
+        //routes.get('/pdf', FileController.show);
+        const pdfStream = await this.caccesosService.generatePDF(json);
+        res.writeHead(200, {
+            'Content-Length': Buffer.byteLength(pdfStream),
+            'Content-Type': 'application/pdf',
+            'Content-disposition': 'attachment;filename=accesos.pdf',
+        }).end(pdfStream);
+    }
+
+    
+    /*
+    @Get('by_joven_club/:id_joven_club')
+    async getComputadorasByJovenClub(@Param('id_joven_club') idJovenClub):Promise<Computadora[]>{
+        return await this.pcService.findByIdJovenClub(idJovenClub);
+    }
+
+    @Get('by_nombre_joven_club/:nombre_joven_club')
+    async getComputadorasByNombreJovenClub(@Param('nombre_joven_club') nombre):Promise<Computadora[]>{
+        return await this.pcService.findByNombreJovenClub(nombre);
+    }
+	*/
+}

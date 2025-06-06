@@ -1,0 +1,36 @@
+import { IsEmail, IsNotEmpty, Length, Matches, IsString } from 'class-validator';
+import { MESSAGES, REGEX } from '../../app.utils'
+export class CreateAccesosDto {
+    @IsNotEmpty()
+    nombre: string;
+
+    @IsNotEmpty()
+	@Length(3, 30)
+    nombrejc: string;
+	
+	@IsNotEmpty()
+	@Length(3, 30)
+    nombrepc: string;
+
+	@IsNotEmpty()
+	@IsString()
+	@Length(3, 15)
+    inventario: string;
+
+    @IsNotEmpty()
+    @IsEmail()
+    admin: string;
+	
+	@IsNotEmpty()
+    @IsEmail()
+    tecnico: string;
+	
+	@IsNotEmpty()
+    @IsEmail()
+    supervisor: string;
+	
+	@IsNotEmpty()
+	@Length(3, 30)
+    causa: string;
+
+}

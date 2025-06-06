@@ -1,0 +1,27 @@
+import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn} from 'typeorm';
+
+@Entity()
+export class cAccesos{
+
+@PrimaryGeneratedColumn()
+id: number;
+
+@Column()
+tecnico: string;
+
+@Column()
+motivo: string;
+
+@Column()
+admin: string;
+
+@Column()
+supervisor: string;
+
+@Column()
+nombrepc: string;
+
+@Column()
+@CreateDateColumn()
+createdAt: Date;
+}
