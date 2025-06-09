@@ -14,14 +14,17 @@ export class MunicipiosService {
       return this.municipioRepo.find({relations: ['provincia'] });
    }
    findOne(id: number){
-    return this.municipioRepo.findOne(id, {relations: ['provincia'] });
+    return this.municipioRepo.findOne({
+      where: { id },
+      relations: ['provincia']
+    });
    }
    create(body: any){
        const nuevoMunicipio = this.municipioRepo.create(body);
        return this.municipioRepo.save(nuevoMunicipio);
    } 
    async update(id: number, body: any){
-    const municipio = await this.municipioRepo.findOne(id);
+    const municipio = await this.municipioRepo.findOne({ where: { id } });
     this.municipioRepo.merge(municipio, body);
     return this.municipioRepo.save(municipio);
    } 

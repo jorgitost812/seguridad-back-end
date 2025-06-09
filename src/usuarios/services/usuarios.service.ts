@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { CreateUsuarioDto } from './../dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './../dto/update-usuario.dto';
 import { Usuario } from '../entities/usuario.entity';
@@ -19,27 +19,24 @@ export class UsuariosService {
    }
    findOne(id: number){
     console.log('Registro: '+ id +' fue consultado');
-    return this.usuariosRepo.findOne(id, {relations: ['jc','rol','jc.municipio','jc.municipio.provincia'] });
+    return this.usuariosRepo.findOne({
+      where: { id } as FindOptionsWhere<Usuario>,
+      relations: ['jc', 'rol', 'jc.municipio', 'jc.municipio.provincia']
+    });
    }
    async create(createUsuarioDto: CreateUsuarioDto){
       console.log('Usuario: '+createUsuarioDto.email +' fue agregado');
        const nuevaTarea = await this.usuariosRepo.create(createUsuarioDto);
        return this.usuariosRepo.save(nuevaTarea);
    } 
-   async findByEmail(email: string): Promise<Usuario | any>{
-      try {
-        const usuario = await this.usuariosRepo.findOne( { where: {email}}); 
-        //console.log('Correo: '+ usuario );
-        if( !usuario )   return  null;
-        return usuario;
-                
-      } catch (error) {
-          throw error;
-      }
-    }
+   async findByEmail(email: string): Promise<Usuario | null> {
+    return this.usuariosRepo.findOne({
+      where: { email } as FindOptionsWhere<Usuario>
+    });
+  }
 
    async update(id: number, updateUsuarioDto: UpdateUsuarioDto){
-      const tarea = await this.usuariosRepo.findOne(id);
+      const tarea = await this.usuariosRepo.findOne({ where: { id } as FindOptionsWhere<Usuario> });
       this.usuariosRepo.merge(tarea, updateUsuarioDto);
       console.log('Usuario: '+ updateUsuarioDto.email +' fue actualizado');
       return this.usuariosRepo.save(tarea);
@@ -51,8 +48,13 @@ export class UsuariosService {
     return true;
    }
 
-   findByIdJovenClub(jc): Promise<Usuario[]> {
-      return this.usuariosRepo.find({ where: { jc: jc }, relations: ['jc','rol'] });
+   findByIdJovenClub(jc: number): Promise<Usuario[]> {
+    return this.usuariosRepo.find({
+      where: { 
+        jc: { id: jc } 
+      } as FindOptionsWhere<Usuario>,
+      relations: ['jc', 'rol']
+    });
   }
   findByIdJovenClubAndNombreRol(jc): Promise<Usuario[]> {
     console.log('Busco '+jc+' ok' );
@@ -70,7 +72,7 @@ export class UsuariosService {
     .getMany();
 }
   findByIdRol(rol): Promise<Usuario[]> {
-      return this.usuariosRepo.find({ where: { rol: rol }, relations: ['jc','rol'] });
+      return this.usuariosRepo.find({ where: { rol: { id: rol } } as FindOptionsWhere<Usuario>, relations: ['jc','rol'] });
   }
   
   findByNombreRol(nombre): Promise<Usuario[]> {

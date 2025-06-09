@@ -17,7 +17,10 @@ export class PcService {
       return this.pcsRepo.find({relations: ['jc'] });
    }
    findOne(id: number){
-    return this.pcsRepo.findOne(id,{relations: ['jc'] });
+    return this.pcsRepo.findOne({
+      where: { id },
+      relations: ['jc']
+    });
    }
    create(body: any){
       let newPC = {
@@ -35,7 +38,7 @@ export class PcService {
        return this.pcsRepo.save(nuevaTarea);
    } 
    async update(id: number, body: any){
-    const tarea = await this.pcsRepo.findOne(id);
+    const tarea = await this.pcsRepo.findOne({ where: { id } });
     this.pcsRepo.merge(tarea, body);
     return this.pcsRepo.save(tarea);
    } 

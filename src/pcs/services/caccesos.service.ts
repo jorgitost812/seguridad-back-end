@@ -17,7 +17,7 @@ console.log('find1');
     return this.caccesosRepo.find();
   }
   findOne(id: number) {
-    return this.caccesosRepo.findOne(id);
+    return this.caccesosRepo.findOne({ where: { id } });
   }
 
   findBy(filtro) {

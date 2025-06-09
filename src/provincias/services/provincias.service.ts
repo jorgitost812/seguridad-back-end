@@ -17,14 +17,14 @@ export class ProvinciasService {
    }
    findOne(id: number){
       if(id) throw new NotFoundException('No hay Provincias')
-      return this.tareasRepo.findOne(id);
+      return this.tareasRepo.findOne({ where: { id } });
    }
    create(body: any){
        const nuevaTarea = this.tareasRepo.create(body);
        return this.tareasRepo.save(nuevaTarea);
    } 
    async update(id: number, body: any){
-    const tarea = await this.tareasRepo.findOne(id);
+    const tarea = await this.tareasRepo.findOne({ where: { id } });
     this.tareasRepo.merge(tarea, body);
     return this.tareasRepo.save(tarea);
    } 

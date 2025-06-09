@@ -12,15 +12,18 @@ export class JovenclubService {
    findAll(){
       return this.jovenClubRepo.find({relations: ['municipio'] });
    }
-   findOne(id: number){
-    return this.jovenClubRepo.findOne(id, {relations: ['municipio'] });
-   }
+   findOne(id: number) {
+    return this.jovenClubRepo.findOne({
+      where: { id },
+      relations: ['municipio']
+    });
+  }
    create(body: any){
        const nuevaTarea = this.jovenClubRepo.create(body);
        return this.jovenClubRepo.save(nuevaTarea);
    } 
    async update(id: number, body: any){
-    const tarea = await this.jovenClubRepo.findOne(id);
+    const tarea = await this.jovenClubRepo.findOne({ where: { id } });
     this.jovenClubRepo.merge(tarea, body);
     return this.jovenClubRepo.save(tarea);
    } 

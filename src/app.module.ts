@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppController } from './app.controller';
 import { ProvinciasModule } from './provincias/provincias.module';
 import { RolesModule } from './roles/roles.module';
 import { funcionesRolesModule } from './funcionesroles/funcionesroles.module';
@@ -30,7 +31,7 @@ import { PDFModule } from './pdf/pdf.module';
     ProvinciasModule, MunicipiosModule, JovenclubModule, PcModule,cAccesosModule,iniSesionModule,  
     RolesModule,funcionesRolesModule, UsuariosModule, AuthModule, PDFModule
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule {}

@@ -14,7 +14,7 @@ export class iniSesionService {
       return this.inisesionRepo.find();
     }
     findOne(id: number){
-    return this.inisesionRepo.findOne(id);
+    return this.inisesionRepo.findOne({ where: { id } });
     }
 	create(body: any){
       let newControl = {
