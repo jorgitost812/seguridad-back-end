@@ -31,6 +31,10 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  app.enableCors({
+    origin: 'http://localhost:8080',
+    credentials: true,
+  });
   await app.listen(3000);
 }
 bootstrap();

@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { Rol } from '../../roles/entities/role.entity';
 import { Jclub } from '../../jcs/entities/jc.entity';
 
-@Entity('usuarios')
+@Entity('usuario')
 @Unique(['email'])
 export class Usuario extends BaseEntity {
     @PrimaryGeneratedColumn()
@@ -49,13 +49,20 @@ export class Usuario extends BaseEntity {
     updatedAt: Date;
 
     @BeforeInsert()
-    @BeforeUpdate()
-    async hashPassword(): Promise<void> {
-        if (this.password) {
-            const salt = await bcrypt.genSalt(10);
-            this.password = await bcrypt.hash(this.password, salt);
-        }
+  async hashPasswordInsert(): Promise<void> {
+    if (this.password) {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
     }
+  }
+
+    @BeforeUpdate()
+  async hashPasswordUpdate(): Promise<void> {
+    if (this.password && !this.password.startsWith('$2b$')) {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    }
+  }
 
     toString(): string {
         return this.email;

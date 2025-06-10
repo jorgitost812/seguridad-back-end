@@ -1,10 +1,8 @@
-import { Controller, Get, Post, Body, ValidationPipe, UseGuards, Req, ClassSerializerInterceptor, UseInterceptors } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { LoginUserDto } from './dto/login-user.dto';
-import { JwtAuthGuard } from "../auth/jwt-auth.guard";
-import { SETTINGS } from '../app.utils';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { UserProfileDto } from './dto/user-profile.dto';
+import { Body, Controller, Post } from "@nestjs/common";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { AuthService } from "./auth.service";
+import { SETTINGS } from "src/app.utils";
+import { LoginUserDto } from "./dto/login-user.dto";
 
 @Controller('api/auth')
 @ApiTags('auth')
@@ -12,17 +10,18 @@ export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @Post('login')
+    @ApiOperation({ summary: 'Login user' })
+    @ApiResponse({ status: 200, description: 'Login successful' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
     async login(@Body(SETTINGS.VALIDATION_PIPE) loginUserDto: LoginUserDto) {
-        const data = await this.authService.login(loginUserDto);
-        return data;
-    }
-
-    @Get('profile')
-    @UseGuards(JwtAuthGuard)
-    @UseInterceptors(ClassSerializerInterceptor)
-    @ApiBearerAuth()
-    @ApiResponse({ type: UserProfileDto })
-    async profile(@Req() req: any) {
-        return await this.authService.getProfile(req.user);
+        console.log('Login request received for:', loginUserDto.email);
+        try {
+            const result = await this.authService.login(loginUserDto);
+            console.log('Login successful');
+            return result;
+        } catch (error) {
+            console.error('Login controller error:', error);
+            throw error;
+        }
     }
 }

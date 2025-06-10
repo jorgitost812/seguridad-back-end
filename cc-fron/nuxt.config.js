@@ -56,31 +56,44 @@ export default {
     baseURL: 'http://localhost:3000'
   },
 
-  auth: {
-    strategies: {
-      local: {
-        token: {
-          property: 'access_token',
-          // required: true,
-          // type: 'Bearer'
-          
+ // ...existing code...
+auth: {
+  strategies: {
+    local: {
+      token: {
+        property: 'access_token',
+        required: true,
+        type: 'Bearer',
+        maxAge: 1800
+      },
+      user: {
+        property: false,
+        autoFetch: true
+      },
+      endpoints: {
+        login: { 
+          url: '/api/auth/login', 
+          method: 'post',
+          propertyName: 'access_token'
         },
-        user: {
-          property: '',
-          // autoFetch: true
-        },
-        
-        endpoints: {
-          login: { url: '/api/auth/login', method: 'post' },
-          logout: false,
-          user: { url: '/api/auth/profile', method: 'get' }
-         
+        logout: false,
+        user: { 
+          url: '/api/auth/profile', 
+          method: 'get',
+          propertyName: false
         }
       }
-    },
-    watchLoggedIn: true,
-    rewriteRedirects: true
+    }
   },
+  redirect: {
+    login: '/login',
+    logout: '/login',
+    home: '/',
+  },
+  watchLoggedIn: true,
+  rewriteRedirects: true
+},
+// ...existing code...
 
   router: {
     middleware: ['auth']

@@ -1,7 +1,8 @@
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { LoginUserDto } from "./dto/login-user.dto";
 import { UsuariosService } from "src/usuarios/services/usuarios.service";
-import { Injectable } from "@nestjs/common";
+import { LoginUserDto } from "./dto/login-user.dto";
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -10,54 +11,51 @@ export class AuthService {
         private jwtService: JwtService
     ) {}
 
-    async validateUser(usuario: string, password: string): Promise<any> {
-        try {
-            const user = await this.usersService.findByEmail(usuario);
-            if(!user) {
-                console.log('Usuario no registrado');
-                return false;
-            } 
-            const validPassword = user.checkIfUnencryptedPasswordIsValid(password);
-            if(!validPassword) {
-                console.log('Contraseña incorrecta');
-                return false;
-            }
-            return user;
-        } catch(e) {
-            console.error('Error validating user:', e);
-            throw e;
+    async validateUser(email: string, password: string): Promise<any> {
+        const user = await this.usersService.findByEmail(email);
+        console.log('Found user:', user ? 'Yes' : 'No');
+        
+        if (user) {
+          console.log('Stored hashed password:', user.password);
+          console.log('Attempting to validate password:', password);
+          const isValid = await bcrypt.compare(password, user.password);
+          console.log('Password validation result:', isValid);
+          
+          if (isValid) {
+            const { password, ...result } = user;
+            return result;
+          }
         }
-    }
+        return null;
+      }
 
     async login(loginUserDto: LoginUserDto) {
+        console.log('Login attempt for:', loginUserDto.email);
         try {
-            const {usuario, password} = loginUserDto;
-            const user = await this.validateUser(usuario, password);
+            const user = await this.validateUser(loginUserDto.email, loginUserDto.password);
             
-            if(!user) {
-                return {
-                    statusCode: 401,
-                    message: 'Login incorrecto'
-                };
+            if (!user) {
+                throw new UnauthorizedException('Credenciales inválidas');
             }
-            
-            const payload = {email: user.email, sub: user.id};
+
+            const payload = { 
+                email: user.email, 
+                sub: user.id,
+                rol: user.rol?.nombre 
+            };
+
             return {
-                access_token: this.jwtService.sign(payload)
+                statusCode: 200,
+                access_token: this.jwtService.sign(payload),
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    rol: user.rol
+                }
             };
         } catch (error) {
             console.error('Login error:', error);
-            throw error;
+            throw new UnauthorizedException('Credenciales inválidas');
         }
     }
-
-    async getProfile(user: any) {
-      try {
-          const userProfile = await this.usersService.findByEmail(user.email);
-          return userProfile;
-      } catch (error) {
-          console.error('Error getting profile:', error);
-          throw error;
-      }
-  }
 }

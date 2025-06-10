@@ -20,7 +20,10 @@ import {
     }
   
     async beforeInsert(event: InsertEvent<Usuario>) {
-      return event.entity.password = await bcrypt.hash(event.entity.password, 10);
+      console.log('Before Insert - Original password:', event.entity.password);
+      const hashedPassword = await bcrypt.hash(event.entity.password, 10);
+      console.log('Before Insert - Hashed password:', hashedPassword);
+      return event.entity.password = hashedPassword;
     }
     async beforeUpdate(event: UpdateEvent<Usuario>) {
       if (event.entity.password){

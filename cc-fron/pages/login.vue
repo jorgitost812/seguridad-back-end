@@ -49,34 +49,38 @@ export default {
   auth: false,
   show: false,
   data: () => ({
-      email: 'ivan@aol.com',
-      password: 'Yoendris123.',
-      show: false
-     
-  }),
+  email: 'ivan@aol.com',
+  password: 'Yoendris123.',
+  show: false
+}),
  
   methods: {
-      async userLogin() {
-      try {
-        const login = {
-            email: this.email,
-            password: this.password
-        }
-        
-        let response = await this.$auth.loginWith('local', { data: login })
-        // const user = await this.$axios.get('/api/auth/profile', {
-        //   headers: {
-        //     'Authorization': `Bearer ${response.data.access_token}`
-        //   }
-        // })
-        // localStorage.setItem('usuario', JSON.stringify(user.data));
-         this.$router.push('/')
-      } catch (e) {
-         alert("Usuario o contraseña incorrecto ..." );
-      
+  async userLogin() {
+    try {
+      const login = {
+        email: this.email,
+        password: this.password
       }
+      console.log('Sending login request:', { email: login.email, timestamp: new Date() })
+      
+      const response = await this.$auth.loginWith('local', { data: login })
+      console.log('Login response:', response)
+      console.log('Password exacta enviada:', JSON.stringify(this.password));
+      if (response.data && response.data.statusCode === 200) {
+        await this.$router.push('/')
+      } else {
+        console.error('Authentication failed:', response)
+        alert("Error de autenticación")
+      }
+    } catch (e) {
+      console.error('Login error details:', {
+        message: e.message,
+        response: e.response?.data
+      })
+      alert("Usuario o contraseña incorrecto")
     }
   }
+}
 };
 //gradient="to top right, rgba(100,115,201,.33), rgba(25,32,72,.7)"
 </script>
