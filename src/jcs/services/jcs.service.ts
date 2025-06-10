@@ -32,8 +32,14 @@ export class JovenclubService {
     return true;
    }
    findByIdMunicipio(municipio): Promise<Jclub[]> {
-      return this.jovenClubRepo.find({ where: { municipio: municipio }, relations: ['municipio'] });
-  }
+    console.log('Finding JCs for municipio ID:', municipio);
+    return this.jovenClubRepo.find({ 
+        where: { 
+            municipio: { id: municipio } 
+        }, 
+        relations: ['municipio'] 
+    });
+}
   findByNombreMunicipio(nombre): Promise<Jclub[]> {
       return this.jovenClubRepo.createQueryBuilder("jc")
       .innerJoinAndSelect("jc.municipio", "municipio")

@@ -15,15 +15,13 @@ export class JovenclubController {
         return this.jovenclubService.findAll();
     }
     @UseGuards(JwtAuthGuard)
-    @Get(':id')
-    getOne(@Param('id') id: number){
-        return this.jovenclubService.findOne(id);
+    @Get('by_municipio/:id_municipio')
+    async getJovenesClubesByMunicipio(@Param('id_municipio') idMunicipio): Promise<Jclub[]> {
+        console.log('Requesting JCs for municipio:', idMunicipio);
+        const result = await this.jovenclubService.findByIdMunicipio(idMunicipio);
+        console.log('Found JCs:', result);
+        return result;
     }
-    /*@Post('add')
-    @HttpCode(201)
-    createJovenClub(@Body() newJovenClub:any){
-	    this.jovenclubService.create(newJovenClub);
-    }*/
     @UseGuards(JwtAuthGuard)
     @Post()
     create(@Body() body: any){
@@ -43,11 +41,6 @@ export class JovenclubController {
        
     }
 
-    @UseGuards(JwtAuthGuard)
-    @Get('by_municipio/:id_municipio')
-    async getJovenesClubesByMunicipio(@Param('id_municipio') idMunicipio):Promise<Jclub[]>{
-        return await this.jovenclubService.findByIdMunicipio(idMunicipio);
-    }
 
     @UseGuards(JwtAuthGuard)
     @Get('by_nombre_municipio/:nombre_municipio')

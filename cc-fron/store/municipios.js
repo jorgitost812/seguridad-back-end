@@ -1,22 +1,35 @@
 export const state = () => ({
-  list: []
+  list: [],
+  loading: false,
+  error: null
 })
 
 export const mutations = {
-  setMunicipios(state, data) {
-    state.list = data
+  SET_MUNICIPIOS(state, municipios) {
+    state.list = municipios
   },
+  SET_LOADING(state, loading) {
+    state.loading = loading
+  },
+  SET_ERROR(state, error) {
+    state.error = error
+  }
 }
 
 export const actions = {
-  async getMunicipios({commit}) {
+  async getMunicipios({ commit }) {
     try {
-      const data = await this.$axios.$get('api/municipios');
-      commit('setMunicipios', data);
+      commit('SET_LOADING', true)
+      const { data } = await this.$axios.get('api/municipios')
+      commit('SET_MUNICIPIOS', data)
     } catch (error) {
-      console.log(error);
+      commit('SET_ERROR', error)
+      throw error
+    } finally {
+      commit('SET_LOADING', false)
     }
   },
+
   async getMunByProvincia({commit}, id) {
       
     try {
@@ -26,5 +39,6 @@ export const actions = {
       console.log(error);
     }
   }
+  
 }
 
