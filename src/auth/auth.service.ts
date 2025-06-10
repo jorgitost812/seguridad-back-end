@@ -27,7 +27,7 @@ export class AuthService {
           }
         }
         return null;
-      }
+    }
 
     async login(loginUserDto: LoginUserDto) {
         console.log('Login attempt for:', loginUserDto.email);
@@ -44,13 +44,17 @@ export class AuthService {
                 rol: user.rol?.nombre 
             };
 
+            // Modificado para incluir más información del usuario
             return {
                 statusCode: 200,
                 access_token: this.jwtService.sign(payload),
                 user: {
                     id: user.id,
                     email: user.email,
-                    rol: user.rol
+                    rol: user.rol,
+                    nombre: user.nombre,
+                    apellidos: user.apellidos,
+                    jc: user.jc
                 }
             };
         } catch (error) {

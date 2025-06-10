@@ -57,43 +57,35 @@ export default {
   },
 
  // ...existing code...
-auth: {
+ auth: {
   strategies: {
     local: {
+      scheme: 'local',
       token: {
         property: 'access_token',
         required: true,
-        type: 'Bearer',
-        maxAge: 1800
+        type: 'Bearer'
       },
       user: {
-        property: false,
-        autoFetch: true
+        property: 'user'
       },
       endpoints: {
         login: { 
           url: '/api/auth/login', 
-          method: 'post',
-          propertyName: 'access_token'
+          method: 'post'
         },
         logout: false,
-        user: { 
-          url: '/api/auth/profile', 
-          method: 'get',
-          propertyName: false
-        }
+        user: false
       }
     }
   },
   redirect: {
     login: '/login',
     logout: '/login',
-    home: '/',
-  },
-  watchLoggedIn: true,
-  rewriteRedirects: true
-},
-// ...existing code...
+    home: '/'  // Cambia esto a la ruta donde quieres redirigir después del login
+  }
+}
+,// ...existing code...
 
   router: {
     middleware: ['auth']

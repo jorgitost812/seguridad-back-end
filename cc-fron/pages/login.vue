@@ -54,30 +54,30 @@ export default {
   show: false
 }),
  
-  methods: {
+methods: {
   async userLogin() {
     try {
-      const login = {
-        email: this.email,
-        password: this.password
-      }
-      console.log('Sending login request:', { email: login.email, timestamp: new Date() })
-      
-      const response = await this.$auth.loginWith('local', { data: login })
-      console.log('Login response:', response)
-      console.log('Password exacta enviada:', JSON.stringify(this.password));
-      if (response.data && response.data.statusCode === 200) {
-        await this.$router.push('/')
-      } else {
-        console.error('Authentication failed:', response)
-        alert("Error de autenticación")
-      }
-    } catch (e) {
-      console.error('Login error details:', {
-        message: e.message,
-        response: e.response?.data
+      const response = await this.$auth.loginWith('local', {
+        data: {
+          email: this.email,
+          password: this.password
+        }
       })
-      alert("Usuario o contraseña incorrecto")
+      
+      console.log('Login response:', response)
+      
+      if (response.data.statusCode === 200) {
+        await this.$auth.setUser(response.data.user)
+        await this.$router.push('/dashboard')  // o la ruta que desees
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      // Mostrar error usando Vuetify snackbar o alert
+      this.$store.commit('alert/setAlert', {
+        status: true,
+        message: 'Usuario o contraseña incorrectos',
+        color: 'error'
+      })
     }
   }
 }
