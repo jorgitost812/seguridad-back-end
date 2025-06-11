@@ -1,22 +1,32 @@
 export const state = () => ({
-  list: []
+  list: [],
+  loading: false,
+  error: null
 })
 
 export const mutations = {
   setAccesosPC(state, data) {
     state.list = data
   },
+  setLoading(state, loading) {
+    state.loading = loading
+  },
+  setError(state, error) {
+    state.error = error
+  }
 }
 
 export const actions = {
-  async getAccesosPC({commit}) {
+  async getAccesosPC({ commit }, jcId) {
     try {
-      const data = await this.$axios.$get('api/accesos');
-      commit('setAccesosPC', data);
+      commit('setLoading', true)
+      const { data } = await this.$axios.get(`api/reportes/pc/${jcId}`)
+      commit('setAccesosPC', data)
     } catch (error) {
-      console.log(error);
+      commit('setError', error)
+      console.error('Error fetching accesos:', error)
+    } finally {
+      commit('setLoading', false)
     }
-  },
-  
+  }
 }
-

@@ -5,13 +5,27 @@ import { json } from 'stream/consumers';
 import { getRepository, Repository } from 'typeorm';
 
 import { cAccesos } from '../entities/caccesos.entity';
+import { CreateAccesoDto } from '../dto/create-accesos.dto';
 
 @Injectable()
 export class cAccesosService {
   constructor(
-    @InjectRepository(cAccesos) private caccesosRepo: Repository<cAccesos>
-  ) { }
+    @InjectRepository(cAccesos)
+    private caccesosRepo: Repository<cAccesos>
+  ) {}
 
+  async create(createAccesoDto: CreateAccesoDto) {
+    try {
+      const newAcceso = this.caccesosRepo.create({
+        ...createAccesoDto,
+        createdAt: new Date()
+      });
+      
+      return await this.caccesosRepo.save(newAcceso);
+    } catch (error) {
+      throw new Error(`Error creating acceso: ${error.message}`);
+    }
+  }
   findAll() {
 console.log('find1');
     return this.caccesosRepo.find();
@@ -91,7 +105,7 @@ console.log('find1');
   }
 
 
-  create(body: any) {
+  createControl(body: any) {
     let newControl = {
       nombrejc: body.nombrejc,
       nombrepc: body.nombrepc,

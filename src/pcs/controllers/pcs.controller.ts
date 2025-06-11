@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Body, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Put, Delete, ParseIntPipe, BadRequestException } from '@nestjs/common';
 import { PcService} from '../services/pcs.service';
 import { Computadora } from '../entities/pc.entity';
 
@@ -36,9 +36,16 @@ export class PcController {
         //return true;
     }
 
-    @Get('by_joven_club/:id_joven_club')
-    async getComputadorasByJovenClub(@Param('id_joven_club') idJovenClub):Promise<Computadora[]>{
-        return await this.pcService.findByIdJovenClub(idJovenClub);
+    @Get('by_joven_club/:idJc')
+    async getComputadorasByJovenClub(
+      @Param('idJc', ParseIntPipe) idJc: number // Asegura conversión a número
+    ) {
+      // Validar que idJc sea un número válido
+      if (isNaN(idJc) || idJc <= 0) {
+        throw new BadRequestException('ID de Joven Club inválido');
+      }
+      
+      return this.pcService.findByJovenClub(idJc);
     }
 
     @Get('by_nombre_joven_club/:nombre_joven_club')

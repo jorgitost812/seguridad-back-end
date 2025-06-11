@@ -160,13 +160,15 @@ import pdf from "vue-pdf";
 import download from "downloadjs";
 //import Datepicker from 'vuejs-datepicker'
 export default {
+  middleware: 'auth',
   data: () => ({
     usuarioActivo: "",
+    loading: false,
     dialog: false,
     dialogDelete: false,
-    jcx: 0,
+    jcx: null,
     municipio: null,
-    provincia: 1,
+    provincia: null,
     states: ["Todos", "Mantenimiento", "Supervisión"],
     causa: "Todos",
     jsonX: {
@@ -178,55 +180,12 @@ export default {
       admin: "",
     },
     headers: [
-      {
-        text: "NombreJc",
-        align: "start",
-        sortable: false,
-        value: "nombrejc",
-        width: "4%",
-      },
-      {
-        text: "NombrePC",
-        align: "start",
-        sortable: false,
-        value: "nombrepc",
-        width: "4%",
-      },
-      {
-        text: "Técnico",
-        align: "start",
-        sortable: false,
-        value: "tecnico",
-        width: "15%",
-      },
-      {
-        text: "Supervisor",
-        align: "start",
-        sortable: false,
-        value: "supervisor",
-        width: "15%",
-      },
-      {
-        text: "Causa",
-        align: "start",
-        sortable: false,
-        value: "causa",
-        width: "12%",
-      },
-      {
-        text: "AdminJC",
-        align: "start",
-        sortable: false,
-        value: "admin",
-        width: "15%",
-      },
-      {
-        text: "Fecha |--| hora",
-        align: "start",
-        sortable: false,
-        value: "createdAt",
-        width: "25%",
-      },
+    { text: 'JC', value: 'nombrejc' },
+      { text: 'PC', value: 'nombrepc' },
+      { text: 'Técnico', value: 'tecnico' },
+      { text: 'Supervisor', value: 'supervisor' },
+      { text: 'Causa', value: 'causa' },
+      { text: 'Fecha', value: 'createdAt' }
     ],
     items: [],
     accessos: [],
@@ -251,6 +210,9 @@ export default {
   }),
 
   computed: {
+    accesos() {
+      return this.$store.state.reportepc.list;
+    },
     user() {
       return this.$store.state.auth.user;
     },
@@ -302,21 +264,17 @@ export default {
     },
   },
 
-  created() {
-    //this.$store.dispatch("provincias/getProvincias");
-    this.$store.dispatch("roles/getRoles");
-    //this.$store.dispatch("municipios/getMunByProvincia", this.user['jc']['municipio']['provincia']['id']);
-
-    this.$store.dispatch('provincias/getProvincias');
-    this.provincia = this.user.jc.municipio.provincia.id;
-    this.$store.dispatch('municipios/getMunByProvincia', this.provincia);
-    this.municipio = this.user.jc.municipio.id;
-    this.$store.dispatch('jcs/getJcsByMunicipios',this.municipio);
-    this.jcx = this.user.jc.id; 
-
-    //this.$store.dispatch('filtro/getFiltro/');
-    this.jcx = this.user.jc.id; 
-    this.initialize();
+  async created() {
+    try {
+      const user = this.$auth.user;
+      if (!user?.jc?.nombre) {
+        throw new Error('No JC found for user');
+      }
+      
+      await this.$store.dispatch('reportepc/getAccesosPC', user.jc.id);
+    } catch (error) {
+      console.error('Error in created:', error);
+    }
   },
 
   methods: {
@@ -324,25 +282,15 @@ export default {
       return this.$store.commit("alert/setAlert", objetoAlerta);
     },
 
-    async initialize (){
-
+    async initialize(jcNombre) {
       try {
-        const {data} = await this.$axios.get(`api/accesos`);
-
-        this.accessos = [];
-        if(this.jcs.length > 0)
-        {
-        const selectedJC = await this.jcs.find(x => x.id === this.jcx)
-        let filter = {
-          nombrejc: selectedJC.nombre
-        }
-
-          await this.filtrarPorJC(filter)
-
-        }
-
+        this.loading = true;
+        const { data } = await this.$axios.get(`api/reportes/pc/${jcNombre}`);
+        this.accesos = data;
       } catch (error) {
-        console.log(error);
+        console.error('Error loading accesos:', error);
+      } finally {
+        this.loading = false;
       }
     },
 

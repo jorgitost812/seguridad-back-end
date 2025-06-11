@@ -237,23 +237,44 @@ export default {
       }
   },
 
-  created() {
+  async created() {
+  try {
     this.$store.dispatch('roles/getRoles');
-    this.$store.dispatch('provincias/getProvincias');
-    this.provincia = this.user.jc.municipio.provincia.id;
-    this.$store.dispatch('municipios/getMunByProvincia', this.provincia);
-    this.municipio = this.user.jc.municipio.id;
-    this.$store.dispatch('jcs/getJcsByMunicipios',this.municipio);
-    this.jcx = this.user.jc.id;  
+    await this.$store.dispatch('provincias/getProvincias');
+    
+    // Verificación segura de propiedades anidadas
+    if (this.user?.jc?.municipio?.provincia?.id) {
+      this.provincia = this.user.jc.municipio.provincia.id;
+    } else {
+      // Valor por defecto o manejo de error
+      console.error("Provincia no definida en usuario:", this.user);
+      this.provincia = 1; // ID de provincia por defecto
+    }
 
-    this.initialize();
-    //this.$store.dispatch('municipios/getMunicipios', this.user.jc.municipio.id);
-    //this.$store.dispatch('jcs/getJcsByMunicipio', this.user.jc.municipio.id);
-
-
-
- 
-  },
+    await this.$store.dispatch('municipios/getMunByProvincia', this.provincia);
+    
+    if (this.user?.jc?.municipio?.id) {
+      this.municipio = this.user.jc.municipio.id;
+    } else {
+      console.error("Municipio no definido en usuario:", this.user);
+      this.municipio = 1; // ID de municipio por defecto
+    }
+    
+    await this.$store.dispatch('jcs/getJcsByMunicipios', this.municipio);
+    
+    // Asignación segura de jcx
+    this.jcx = this.user?.jc?.id || this.jcs[0]?.id || null;
+    
+    await this.initialize();
+  } catch (error) {
+    console.error("Error en created:", error);
+    this.$store.commit('alert/setAlert', {
+      status: true,
+      message: 'Error cargando datos',
+      color: 'error'
+    });
+  }
+},
 
   methods: {
     irDetalles(item){
@@ -273,10 +294,39 @@ export default {
         console.log(error);
       }
     },
-    actualizaJC(){
-      this.$store.dispatch('jcs/getJcsByMunicipio', this.municipio);
-           
-     },
+    async actualizaJC() {
+  // Validar que municipio sea un número válido
+  if (!this.municipio || isNaN(this.municipio)) {
+    console.error('Municipio inválido:', this.municipio);
+    this.municipio = 1; // Valor por defecto
+  }
+  
+  await this.$store.dispatch('jcs/getJcsByMunicipio', this.municipio);
+},
+
+async initialize() {
+  try {
+    // Validar jcx antes de usarlo
+    if (!this.jcx || isNaN(this.jcx)) {
+      console.error('JC inválido:', this.jcx);
+      if (this.jcs.length > 0) {
+        this.jcx = this.jcs[0].id;
+      } else {
+        throw new Error('No hay JCs disponibles');
+      }
+    }
+
+    const { data } = await this.$axios.get(`api/pcs/by_joven_club/${this.jcx}`);
+    this.items = data;
+  } catch (error) {
+    console.error("Error loading PCs:", error);
+    this.$store.commit('alert/setAlert', {
+      status: true,
+      message: 'Error cargando computadoras',
+      color: 'error'
+    });
+  }
+},
     editItem(item) {
       this.editedIndex = this.items.indexOf(item);
       this.editedItem = Object.assign({}, item);

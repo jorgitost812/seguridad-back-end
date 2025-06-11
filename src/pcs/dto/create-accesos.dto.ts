@@ -1,36 +1,28 @@
-import { IsEmail, IsNotEmpty, Length, Matches, IsString } from 'class-validator';
-import { MESSAGES, REGEX } from '../../app.utils'
-export class CreateAccesosDto {
-    @IsNotEmpty()
-    nombre: string;
+import { IsString, IsBoolean, IsNumber, IsOptional } from 'class-validator';
 
-    @IsNotEmpty()
-	@Length(3, 30)
-    nombrejc: string;
-	
-	@IsNotEmpty()
-	@Length(3, 30)
-    nombrepc: string;
+export class CreateAccesoDto {
+  @IsString()
+  nombrejc: string;
 
-	@IsNotEmpty()
-	@IsString()
-	@Length(3, 15)
-    inventario: string;
+  @IsString()
+  nombrepc: string;
 
-    @IsNotEmpty()
-    @IsEmail()
-    admin: string;
-	
-	@IsNotEmpty()
-    @IsEmail()
-    tecnico: string;
-	
-	@IsNotEmpty()
-    @IsEmail()
-    supervisor: string;
-	
-	@IsNotEmpty()
-	@Length(3, 30)
-    causa: string;
+  @IsString()
+  tecnico: string;
 
+  @IsString()
+  supervisor: string;
+
+  @IsString()
+  causa: string;
+
+  @IsString()
+  inventario: string;
+
+  @IsNumber()
+  computadora_id: number;
+
+  @IsBoolean()
+  @IsOptional()
+  admin?: boolean;
 }

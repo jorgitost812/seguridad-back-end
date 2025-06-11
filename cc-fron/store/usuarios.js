@@ -1,25 +1,32 @@
 export const state = () => ({
-    list: [],
-    admin: []
-  })
+  list: [],
+  loading: false,
+  error: null
+})
   
-  export const mutations = {
-    setUsuarios(state, data) {
-      state.list = data
-    },
-    setAdmin(state, data) {
-      state.admin = data
-    },
+export const mutations = {
+  setUsuarios(state, usuarios) {
+    state.list = usuarios
+  },
+  setLoading(state, loading) {
+    state.loading = loading
+  },
+  setError(state, error) {
+    state.error = error
   }
+}
   
   export const actions = {
-    async getUsuarios({commit}) {
+    async getUsuarios({ commit }) {
       try {
-        const data = await this.$axios.$get('api/usuarios');
-        // console.log(data)
-        commit('setUsuarios', data);
+        commit('setLoading', true)
+        const { data } = await this.$axios.get('api/usuarios')
+        commit('setUsuarios', data)
       } catch (error) {
-        console.log(error);
+        commit('setError', error)
+        console.error('Error loading usuarios:', error)
+      } finally {
+        commit('setLoading', false)
       }
     },
     async getByRol({commit}, id) {

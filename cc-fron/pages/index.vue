@@ -28,6 +28,57 @@ import Widget from '~/components/Widget.vue';
 import { state } from '~/store/jcs';
 
 export default {
+  middleware: 'auth',
+  async created() {
+    try {
+      console.log('User component created');
+      await this.$store.dispatch('roles/getRoles');
+      await this.$store.dispatch('provincias/getProvincias');
+      
+      const user = this.$auth.user;
+      console.log('Current user:', user);
+
+      if (user?.jc?.municipio?.provincia?.id) {
+        this.provincia = user.jc.municipio.provincia.id;
+        await this.$store.dispatch('municipios/getMunByProvincia', this.provincia);
+      }
+
+      if (user?.jc?.municipio?.id) {
+        this.municipio = user.jc.municipio.id;
+        await this.$store.dispatch('jcs/getJcsByMunicipios', this.municipio);
+      }
+
+      if (user?.jc?.id) {
+        this.jcx = user.jc.id;
+        await this.initialize();
+      }
+    } catch (error) {
+      console.error('Error in created:', error);
+      this.callAlert({
+        status: true,
+        message: 'Error al cargar datos iniciales',
+        color: 'error'
+      });
+    }
+  },
+
+  methods: {
+    async initialize() {
+      try {
+        console.log('Initializing with JC:', this.jcx);
+        const {data} = await this.$axios.get(`api/usuarios/by_joven_club/${this.jcx}`);
+        console.log('Users data:', data);
+        this.items = data;
+      } catch (error) {
+        console.error('Error loading users:', error);
+        this.callAlert({
+          status: true,
+          message: 'Error cargando usuarios',
+          color: 'error'
+        });
+      }
+    }
+  },
   components: { Widget },
   data: () => ({
     backgroundDiv : {

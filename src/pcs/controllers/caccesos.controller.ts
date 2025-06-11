@@ -1,8 +1,9 @@
-import { Controller, Get, Param, Post, Body, Put, Delete, UseGuards , Res, Query} from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Put, Delete, UseGuards , Res, Query, BadRequestException} from '@nestjs/common';
 import { Request, Response, Application } from 'express';
 import { cAccesosService} from '../services/caccesos.service';
 import { JwtAuthGuard } from "../../auth/jwt-auth.guard";
 import { cAccesos } from '../entities/caccesos.entity';
+import { CreateAccesoDto } from '../dto/create-accesos.dto';
 
 @Controller('api/accesos')
 export class cAccesosController {
@@ -58,13 +59,15 @@ export class cAccesosController {
     }
 
 
-    @UseGuards(JwtAuthGuard)
     @Post()
-    create(@Body() body: any){
-		//console.log(body)
-        return this.caccesosService.create(body); 
-        // return body;
-    }
+@UseGuards(JwtAuthGuard)
+async create(@Body() createAccesoDto: CreateAccesoDto) {
+  try {
+    return await this.caccesosService.create(createAccesoDto);
+  } catch (error) {
+    throw new BadRequestException('Error al crear el acceso: ' + error.message);
+  }
+}
 
     @UseGuards(JwtAuthGuard)
     @Get('/export/pdf/:json')

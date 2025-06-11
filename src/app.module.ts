@@ -25,6 +25,7 @@ import { PDFModule } from './pdf/pdf.module';
       database: 'seguridad',
       entities: ['dist/**/*.entity{.ts,.js}'],
       synchronize: true,
+      migrationsRun: true,
       retryDelay: 3000,
       retryAttempts: 10
     }),

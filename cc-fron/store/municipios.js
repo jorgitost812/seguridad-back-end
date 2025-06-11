@@ -30,13 +30,15 @@ export const actions = {
     }
   },
 
-  async getMunByProvincia({commit}, id) {
-      
+  async getMunByProvincia({ commit }, idProvincia) {
     try {
-      const data = await this.$axios.$get(`api/municipios/by_provincia/${id}`);
-      commit('setMunicipios', data);
+      const { data } = await this.$axios.get(
+        `api/municipios/by-provincia/${idProvincia}`
+      );
+      commit('SET_LIST', data);
     } catch (error) {
-      console.log(error);
+      console.error("Error cargando municipios:", error);
+      // Manejo de errores
     }
   }
   

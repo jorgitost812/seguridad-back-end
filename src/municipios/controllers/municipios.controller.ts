@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Body, Put, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Put, Delete, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { MunicipiosService } from '../services/municipios.service';
 import {Municipio} from './../entities/municipio.entity';
 import { JwtAuthGuard } from "../../auth/jwt-auth.guard";
@@ -40,8 +40,10 @@ export class MunicipiosController {
         
     }
     @UseGuards(JwtAuthGuard)
-    @Get('by_provincia/:id_provincia')
-    async getMunicipiosByProvincia(@Param('id_provincia') idProvincia):Promise<Municipio[]>{
-        return await this.municipiosService.findByIdProvincia(idProvincia);
-    }
+    @Get('by-provincia/:idProvincia')
+async getMunicipiosByProvincia(
+  @Param('idProvincia', ParseIntPipe) idProvincia: number // Asegura tipo número
+) {
+  return this.municipiosService.findByIdProvincia(idProvincia);
+}
 }

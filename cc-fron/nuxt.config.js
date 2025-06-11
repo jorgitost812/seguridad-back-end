@@ -83,7 +83,9 @@ export default {
     login: '/login',
     logout: '/login',
     home: '/'  // Cambia esto a la ruta donde quieres redirigir después del login
-  }
+  },
+  watchLoggedIn: true,
+    fullPathRedirect: true
 }
 ,// ...existing code...
 

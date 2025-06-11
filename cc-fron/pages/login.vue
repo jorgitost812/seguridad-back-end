@@ -53,6 +53,8 @@ export default {
   password: 'Yoendris123.',
   show: false
 }),
+
+
  
 methods: {
   async userLogin() {
@@ -68,7 +70,7 @@ methods: {
       
       if (response.data.statusCode === 200) {
         await this.$auth.setUser(response.data.user)
-        await this.$router.push('/dashboard')  // o la ruta que desees
+        await this.$router.push('/')  // o la ruta que desees
       }
     } catch (error) {
       console.error('Login error:', error)

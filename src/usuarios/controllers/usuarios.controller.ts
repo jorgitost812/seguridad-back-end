@@ -45,9 +45,12 @@ export class UsuariosController {
 
     @UseGuards(JwtAuthGuard)
     @Get('by_joven_club/:id_joven_club')
-    async getUsuariosByJovenClub(@Param('id_joven_club') idJovenClub):Promise<Usuario[]>{
-        return await this.usuarioService.findByIdJovenClub(idJovenClub);
-    }
+async getUsuariosByJovenClub(@Param('id_joven_club') idJovenClub): Promise<Usuario[]> {
+    console.log('Fetching users for JC:', idJovenClub);
+    const users = await this.usuarioService.findByIdJovenClub(idJovenClub);
+    console.log('Found users:', users);
+    return users;
+}
     
     @UseGuards(JwtAuthGuard)
     @Get('by_rol/:id_rol')

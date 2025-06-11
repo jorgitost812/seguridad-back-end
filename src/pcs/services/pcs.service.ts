@@ -47,9 +47,19 @@ export class PcService {
     return true;
    }
 
-   findByIdJovenClub(jc): Promise<Computadora[]> {
-      return this.pcsRepo.find({ where: { jc: jc }, relations: ['jc']});
-  }  
+   async findByJovenClub(idJc: number): Promise<Computadora[]> {
+      // Validación adicional
+      if (!idJc) {
+        throw new Error('ID de Joven Club requerido');
+      }
+    
+      return this.pcsRepo.find({
+        where: {
+          jc: { id: idJc } // Usar relación correctamente
+        },
+        relations: ['jc'] // Incluir relación si es necesario
+      });
+    }
 
   findByNombreJovenClub(nombre): Promise<Computadora[]> {
    return this.pcsRepo.createQueryBuilder("computadora")

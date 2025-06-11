@@ -178,6 +178,7 @@
 <script>
 export default {
   data: () => ({
+    loading: false,
     dialog: false,
     dialogTras: false,
     dialogDelete: false,
@@ -275,37 +276,69 @@ export default {
       }
   },
 
-  created() {
-    //this.$store.dispatch('municipios/getMunicipios');
-    
-    this.$store.dispatch('roles/getRoles');
-    this.$store.dispatch('provincias/getProvincias');
-    this.provincia = this.user.jc.municipio.provincia.id;
-    this.$store.dispatch('municipios/getMunByProvincia', this.provincia);
-    this.municipio = this.user.jc.municipio.id;
-    this.$store.dispatch('jcs/getJcsByMunicipios',this.municipio);
-    this.jcx = this.user.jc.id;  
-    this.initialize(); 
+  async created() {
+    console.log('User component created')
+    try {
+      await this.loadInitialData()
+    } catch (error) {
+      console.error('Error in created:', error)
+      this.callAlert({
+        status: true,
+        message: 'Error cargando datos iniciales',
+        color: 'error'
+      })
+    }
   },
 
   methods: {
+    async loadInitialData() {
+      this.loading = true
+      try {
+        await this.$store.dispatch('roles/getRoles')
+        await this.$store.dispatch('provincias/getProvincias')
+        
+        const user = this.$auth.user
+        console.log('Current user:', user)
+
+        if (user?.jc?.municipio?.provincia?.id) {
+          this.provincia = user.jc.municipio.provincia.id
+          await this.$store.dispatch('municipios/getMunByProvincia', this.provincia)
+        }
+
+        if (user?.jc?.municipio?.id) {
+          this.municipio = user.jc.municipio.id
+          await this.$store.dispatch('jcs/getJcsByMunicipios', this.municipio)
+        }
+
+        if (user?.jc?.id) {
+          this.jcx = user.jc.id
+          await this.initialize()
+        }
+      } finally {
+        this.loading = false
+      }
+    },
+    async initialize() {
+      try {
+        console.log('Initializing with JC:', this.jcx)
+        const response = await this.$axios.get(`api/usuarios/by_joven_club/${this.jcx}`)
+        console.log('Users response:', response)
+        this.items = response.data
+      } catch (error) {
+        console.error('Error loading users:', error)
+        this.callAlert({
+          status: true,
+          message: 'Error cargando usuarios',
+          color: 'error'
+        })
+      }
+    },
     grupo_mcpal(val){
       return val === true ? 'Sí' : 'No'  
     },   
     callAlert(objetoAlerta) {
         return this.$store.commit('alert/setAlert', objetoAlerta)
       },
-    async initialize() {
-      if(this.user.rol.id === 3){
-        this.municipio = this.user.jc.municipio.id;
-      }  
-      try {
-        const {data} = await this.$axios.get(`api/usuarios/by_joven_club/${this.jcx}`)
-        this.items = data;
-      } catch (error) {
-        console.log(error);
-      }
-    },
     actualizaJC(){
         this.$store.dispatch('jcs/getJcsByMunicipio', this.municipio);
     },
