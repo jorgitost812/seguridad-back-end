@@ -32,16 +32,10 @@ export class MunicipiosService {
     await this.municipioRepo.delete(id);
     return "Municipio Eliminado";
    }
-   async findByIdProvincia(idProvincia: number): Promise<Municipio[]> {
-      // Validar parámetro
-      if (!idProvincia || isNaN(idProvincia)) {
-        throw new Error('ID de provincia inválido');
-      }
-    
-      return this.municipioRepo.find({
-        where: {
-          provincia: { id: idProvincia }
-        }
-      });
-    }
+   async findByProvincia(provinciaId: number): Promise<Municipio[]> {
+    return this.municipioRepo.find({
+      where: { provincia: { id: provinciaId } },
+      relations: ['provincia'],
+    });
+  }
 }

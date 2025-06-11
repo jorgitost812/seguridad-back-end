@@ -18,7 +18,7 @@
            
             <v-col cols="12" sm="6" md="4" v-if="user.rol.id < 2">
               <v-select class="dark" :class="['mt-5','ml-16']" style="width: 60%;"  
-                :items="provincias.data"
+                :items="provincias.list"
                 label="Provincia"
                 item-text="nombre"
                 item-value="id"
@@ -83,18 +83,18 @@
 <script>
 // { text: 'Id', value: 'id'},
   export default {
+    middleware: 'auth',
     data: () => ({
       usuarioActivo: '',
       dialog: false,
+      selectedProvinciaId: null,
       dialogDelete: false,
       provincia: null,
       headers: [
-       
-        { text: 'Nombre', align: 'start', sortable: false, value: 'nombre', width: '30%'},
-        { text: "Provincia", value: "provincia.nombre" , width: '40%'},
-        { text: 'Acción', value: 'actions', sortable: false, width: '15%'},
-       
-      ],
+      { text: 'ID', value: 'id' },
+      { text: 'Nombre', value: 'nombre' },
+      { text: 'Provincia', value: 'provincia.nombre' }
+    ],
       items: [],
       Misprovincias: [],
       editedIndex: -1,
@@ -118,10 +118,14 @@
       roles() {
       return this.$store.state.roles.list;
     },
-       provincias() {
-        return this.$store.state.provincias.list;
-      }
+    provincias() {
+      return this.$store.state.provincias
     },
+    municipios() {
+      return this.$store.state.municipios.list
+    }
+    },
+    
 
     watch: {
       dialog (val) {
@@ -148,13 +152,35 @@
       }
     },
 
-    created () {
-      this.initialize();
-      this.$store.dispatch('provincias/getProvincias');
-      this.provincia = this.user.jc.municipio.provincia.id;
-      // alert("created"+this.provincia);
-      this.$store.dispatch('roles/getRoles');
-    },
+    async created() {
+  try {
+    // Cargar provincias y roles
+    await Promise.all([
+      this.$store.dispatch('provincias/getProvincias'),
+      this.$store.dispatch('roles/getRoles')
+    ]);
+
+    // Establecer provincia si el usuario la tiene asignada
+    const user = this.$auth.user;
+    if (user?.jc?.municipio?.provincia?.id) {
+      this.provincia = user.jc.municipio.provincia.id;
+    } else {
+      console.warn('Usuario no tiene provincia asignada');
+      this.provincia = 1; // valor por defecto
+    }
+
+    // Inicializar municipios
+    await this.initialize();
+  } catch (error) {
+    console.error('Error en created:', error);
+    this.$store.commit('alert/setAlert', {
+      status: true,
+      message: 'Error cargando datos iniciales',
+      color: 'error'
+    });
+  }
+}
+,
 
     methods: {
       callAlert(objetoAlerta) {
@@ -162,14 +188,18 @@
       },
       
       async initialize () {
-        try {
-           //alert("initialize"+this.provincia);
-          const {data} = await this.$axios.get(`api/municipios/by_provincia/${this.provincia}`)
-          this.items = data;
-        } catch(error) {
-          console.log(error);
-        }
-      },
+  try {
+    const {data} = await this.$axios.get(`api/municipios/by_provincia/${this.provincia}`)
+    this.items = data;
+  } catch(error) {
+    console.error('Error loading municipios:', error);
+    this.callAlert({
+      status: true,
+      message: 'Error cargando municipios',
+      color: 'error'
+    });
+  }
+},
       actualizaMun(){
       //alert("actualizaMun"+this.provincia);
       this.$store.dispatch('jcs/getMunByProvincia', this.provincia);
@@ -214,32 +244,32 @@
         })
       },
 
-      async save () {
-        //Se ejeucata para modificar uno existente
-        
-        if (this.editedIndex > -1) {
-          try{
-          // Object.assign(this.items[this.editedIndex], this.editedItem)
-          await this.$axios.put(`api/municipios/${this.items[this.editedIndex].id}`, this.editedItem);
-          this.callAlert({status: true, message: 'Se modifico satifactoriamente', color: 'primary'});
+      async save() {
+      if (this.editedIndex > -1) {
+        try {
+          await this.$axios.put(`api/municipios/${this.items[this.editedIndex].id}`, {
+            nombre: this.editedItem.nombre,
+            provincia: this.editedItem.provincia
+          });
+          this.callAlert({status: true, message: 'Se modificó satisfactoriamente', color: 'primary'});
           this.initialize();
-          }catch (error) {
-            this.callAlert({status: true, message: 'No se modifico ', color: 'error'});
-          }
-        } else {
-          // Se ejecuta para crear uno nuevo
-          try {
-            if(this.user.rol.id ===2)
-              this.editedItem.provincia = this.user.jc.municipio.provincia.id;
-            await this.$axios.post(`api/municipios`, this.editedItem);
-            this.callAlert({status: true, message: 'Se agrego satifactoriamente', color: 'primary'});
-            this.initialize();
-          } catch (error) {
-             this.callAlert({status: true, message: 'No se agrego ', color: 'error'});
-          }
+        } catch (error) {
+          this.callAlert({status: true, message: 'Error al modificar', color: 'error'});
         }
-        this.close()
-      },
+      } else {
+        try {
+          await this.$axios.post('api/municipios', {
+            nombre: this.editedItem.nombre,
+            provincia: this.editedItem.provincia
+          });
+          this.callAlert({status: true, message: 'Se creó satisfactoriamente', color: 'primary'});
+          this.initialize();
+        } catch (error) {
+          this.callAlert({status: true, message: 'Error al crear', color: 'error'});
+        }
+      }
+      this.close();
+    },
     },
   }
 </script>

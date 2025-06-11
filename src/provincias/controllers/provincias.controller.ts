@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Body, Put, Delete, UseGuards} from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Put, Delete, UseGuards, HttpException, HttpStatus} from '@nestjs/common';
 import { ProvinciasService} from '../services/provincias.service';
 import { JwtAuthGuard } from "../../auth/jwt-auth.guard";
 
@@ -9,17 +9,20 @@ export class ProvinciasController {
      ) {}
      @UseGuards(JwtAuthGuard)
      @Get()
-     async getAll(){
-     const data = await this.provinciasService.findAll();
-         return { data } 
-         //return [1,2,3,4];
-     }
+  async findAll() {
+    try {
+      const provincias = await this.provinciasService.findAll();
+      return provincias;
+    } catch (error) {
+      throw new HttpException('Error fetching provincias', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
      @UseGuards(JwtAuthGuard)
-     @Get(':id')
-     async getOne(@Param('id') id: number){
-         return await this.provinciasService.findOne(id);
-         //return id;
-     }
+     @Get('by_provincia/:id')
+  async findByProvincia(@Param('id') id: number) {
+    return await this.provinciasService.findOne(id);
+  }
      @UseGuards(JwtAuthGuard)
      @Post()
      async create(@Body() body: any){

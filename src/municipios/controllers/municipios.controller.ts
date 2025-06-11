@@ -16,11 +16,10 @@ export class MunicipiosController {
         //return [1,2,3,4];
     }
     @UseGuards(JwtAuthGuard)
-    @Get(':id')
-    getOne(@Param('id') id: number){
-        return this.municipiosService.findOne(id);
-        //return id;
-    }
+    @Get('by_provincia/:id')
+  async findByProvincia(@Param('id') provinciaId: number) {
+    return this.municipiosService.findByProvincia(provinciaId);
+  }
     @UseGuards(JwtAuthGuard)
     @Post()
     create(@Body() body: any){
@@ -44,6 +43,6 @@ export class MunicipiosController {
 async getMunicipiosByProvincia(
   @Param('idProvincia', ParseIntPipe) idProvincia: number // Asegura tipo número
 ) {
-  return this.municipiosService.findByIdProvincia(idProvincia);
+  return this.municipiosService.findByProvincia(idProvincia);
 }
 }
