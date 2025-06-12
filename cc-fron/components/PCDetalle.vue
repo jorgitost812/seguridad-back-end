@@ -240,42 +240,44 @@ export default {
     
     async save() {
   try {
-    // Asegúrate que todos los campos tienen el tipo correcto
+    // Validaciones previas
+    if (!this.pc || !this.pc.id) {
+      throw new Error('Datos de PC no válidos');
+    }
+
     const payload = {
       nombrejc: this.pc.jc ? String(this.pc.jc.nombre) : 'No asignado',
       nombrepc: String(this.pc.nombre),
       inventario: String(this.pc.numero),
-      admin: false, // Cambiado a boolean
+      admin: false,
       tecnico: String(this.user.email),
       supervisor: String(this.supervisor.email),
       causa: String(this.causa),
-      computadora_id: Number(this.pcID),
-      // pcID: this.pc.jc ? Number(this.pc.jc.municipioId) : null // Añadido el ID de la computadora como número
+      computadora_id: Number(this.pcID)
     };
-    if (!payload.pcID) {
-      throw new Error('No se pudo obtener el ID del municipio');
+
+    // Guardar acceso
+    const response = await this.$axios.post("/api/accesos", payload);
+
+    if (response.data) {
+      this.showBoton = true;
+      this.show = true;
+      
+      this.callAlert({
+        status: true,
+        message: 'Acceso registrado correctamente',
+        color: 'success'
+      });
+
+      // Enviar notificación por email
+      await this.$axios.post(`mail/notification`, payload);
     }
 
-    // Enviar la solicitud
-    await this.$axios.post("api/accesos", payload);
-    
-    this.showBoton = true;
-    this.show = true;
-    
-    // Mostrar mensaje de éxito
-    this.callAlert({
-      status: true,
-      message: 'Acceso registrado correctamente',
-      color: 'success'
-    });
-
-    // Enviar email
-    await this.$axios.post(`mail/notification`, payload);
   } catch (error) {
-    console.error('Error guardando autorización:', error);
+    console.error('Error en save():', error);
     this.callAlert({
       status: true,
-      message: 'Error registrando la autorización: ' + (error.response?.data?.message || error.message),
+      message: `Error: ${error.response?.data?.message || error.message}`,
       color: 'error'
     });
   }

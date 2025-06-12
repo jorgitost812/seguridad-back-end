@@ -62,12 +62,15 @@ export class cAccesosController {
     @Post()
 @UseGuards(JwtAuthGuard)
 async create(@Body() createAccesoDto: CreateAccesoDto) {
-  try {
-    return await this.caccesosService.create(createAccesoDto);
-  } catch (error) {
-    throw new BadRequestException('Error al crear el acceso: ' + error.message);
+    try {
+      const result = await this.caccesosService.create(createAccesoDto);
+      return result;
+    } catch (error) {
+      throw new BadRequestException(
+        `Error al crear acceso: ${error.message}`
+      );
+    }
   }
-}
 
     @UseGuards(JwtAuthGuard)
     @Get('/export/pdf/:json')
@@ -95,14 +98,16 @@ async create(@Body() createAccesoDto: CreateAccesoDto) {
     }
 
     
-    /*
-    @Get('by_joven_club/:id_joven_club')
-    async getComputadorasByJovenClub(@Param('id_joven_club') idJovenClub):Promise<Computadora[]>{
-        return await this.pcService.findByIdJovenClub(idJovenClub);
+    @Get('by_joven_club/:jcId')
+    @UseGuards(JwtAuthGuard)
+    async getAccesosByJovenClub(@Param('jcId') jcId: string) {
+      try {
+        return await this.caccesosService.findByJovenClub(jcId);
+      } catch (error) {
+        throw new BadRequestException(
+          `Error al obtener accesos: ${error.message}`
+        );
+      }
     }
-    @Get('by_nombre_joven_club/:nombre_joven_club')
-    async getComputadorasByNombreJovenClub(@Param('nombre_joven_club') nombrejc):Promise<Computadora[]>{
-        return await this.pcService.findByNombreJovenClub(nombre);
-    }*/
 	
 }

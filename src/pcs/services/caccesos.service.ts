@@ -26,6 +26,16 @@ export class cAccesosService {
       throw new Error(`Error creating acceso: ${error.message}`);
     }
   }
+  async findByJovenClub(jcId: string): Promise<cAccesos[]> {
+
+    return await this.caccesosRepo.find({
+
+        where: { nombrejc: jcId }
+
+    });
+
+}
+
   findAll() {
 console.log('find1');
     return this.caccesosRepo.find();
