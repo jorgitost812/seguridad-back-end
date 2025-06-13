@@ -117,6 +117,7 @@ export default {
   usuarioReal: "",
   data() {
     return {
+      accesos: [],
       clipped: false,
       activo: 0,
       imagen: {
@@ -200,9 +201,9 @@ export default {
    
   },
    
-   created() {
-    this.initialize(); 
-   
+  async created() {
+    const response = await this.$axios.get('http://localhost:8080/reportepc');
+    this.accesos = response.data;
   },
   methods: {
     initialize() {

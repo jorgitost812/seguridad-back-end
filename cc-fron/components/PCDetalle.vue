@@ -168,10 +168,25 @@ export default {
       return this.showBoton ? 'Ocultar' : 'Registrar';
     }    
   },
-  async created() { 
-    await this.$store.dispatch('usuarios/getByRol', 6);
+  async created() {
+  try {
+    const rolId = 6;
+    await this.$store.dispatch('usuarios/getByRol', rolId);
     await this.getPC();
+  } catch (error) {
+    console.error('Error in created():', error);
+  }
   },
+
+  async getByRol({ commit }, rolId) {
+  try {
+    const { data } = await this.$axios.get(`/api/usuarios/by_rol/${rolId}`);
+    commit('setUsers', data);
+  } catch (error) {
+    console.error('Error fetching users by rol:', error);
+    throw error;
+  }
+},
   methods: {
     callAlert(objetoAlerta) {
       return this.$store.commit('alert/setAlert', objetoAlerta)
@@ -240,13 +255,8 @@ export default {
     
     async save() {
   try {
-    // Validaciones previas
-    if (!this.pc || !this.pc.id) {
-      throw new Error('Datos de PC no válidos');
-    }
-
     const payload = {
-      nombrejc: this.pc.jc ? String(this.pc.jc.nombre) : 'No asignado',
+      nombrejc: this.pc.jc?.nombre || 'No asignado',
       nombrepc: String(this.pc.nombre),
       inventario: String(this.pc.numero),
       admin: false,
@@ -254,30 +264,25 @@ export default {
       supervisor: String(this.supervisor.email),
       causa: String(this.causa),
       computadora_id: Number(this.pcID)
+      // Removed pcId as it's redundant with computadora_id
     };
 
-    // Guardar acceso
     const response = await this.$axios.post("/api/accesos", payload);
-
+    
     if (response.data) {
       this.showBoton = true;
       this.show = true;
-      
       this.callAlert({
         status: true,
         message: 'Acceso registrado correctamente',
         color: 'success'
       });
-
-      // Enviar notificación por email
-      await this.$axios.post(`mail/notification`, payload);
     }
-
   } catch (error) {
-    console.error('Error en save():', error);
+    console.error('Error saving access:', error);
     this.callAlert({
       status: true,
-      message: `Error: ${error.response?.data?.message || error.message}`,
+      message: error.response?.data?.message || 'Error al guardar acceso',
       color: 'error'
     });
   }

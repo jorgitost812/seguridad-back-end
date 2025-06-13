@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, ValidationPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, ValidationPipe, UseGuards, BadRequestException, ParseIntPipe } from '@nestjs/common';
 import { UsuariosService } from './../services/usuarios.service';
 import { Usuario } from './../entities/usuario.entity';
 import { CreateUsuarioDto } from './../dto/create-usuario.dto';
@@ -65,16 +65,17 @@ async getUsuariosByJovenClub(@Param('id_joven_club') idJovenClub): Promise<Usuar
     }
 
     @UseGuards(JwtAuthGuard)
-    @Get('by_joven_club_and_rol/:id_joven_club')
-    async getUsuariosByIdJovenClubAndNombreRol(@Param('id_joven_club') idJovenClub):Promise<Usuario[]>{
-        return await this.usuarioService.findByIdJovenClubAndNombreRol(idJovenClub);
-    }
+@Get('by_joven_club_and_rol/:id_joven_club')
+async getUsuariosByIdJovenClubAndNombreRol(
+  @Param('id_joven_club', ParseIntPipe) idJovenClub: number
+): Promise<Usuario[]> {
+  try {
+    return await this.usuarioService.findByIdJovenClubAndNombreRol(idJovenClub);
+  } catch (error) {
+    throw new BadRequestException(`Error fetching users: ${error.message}`);
+  }
+}
 
-    @UseGuards(JwtAuthGuard)
-    @Get('by_municipio_and_rol/:id_joven_club')
-    async getUsuariosByIdMunicipioAndNombreRol(@Param('id_joven_club') idJovenClub):Promise<Usuario[]>{
-        return await this.usuarioService.findByIdMunicipioAndNombreRol(idJovenClub);
-    }
 
     @UseGuards(JwtAuthGuard)
     @Get('generate/password/:length')

@@ -1,5 +1,22 @@
-﻿/* Data for the 'public.usuario' table  (Records 1 - 1) */
+﻿DELETE FROM public.usuario WHERE email = 'j@gmail.com'; -- Elimina el existente si hay
 
-INSERT INTO public.usuario ("id", "nombre", "apellidos", "email", "password", "grupo_municipal", "activo", "createdAt", "updatedAt", "rolId", "jcId")
-VALUES 
-  (1, E'Yoendris', E'Reyna Arzuaga', E'yoendris.reyna@ltu.jovenclub.cu', E'$2b$10$p/QqMy/2jR5ypd744PAvneUPZtEbpLSZv06lrPQhbVMO8nnYF6VKq', False, True, E'2021-11-16 23:19:11', E'2022-02-05 05:51:27.295', 1, 1);
+  INSERT INTO public.usuario (
+  "nombre", "apellidos", "email", "password", 
+  "grupo_municipal", "activo", "createdAt", "updatedAt", "rolId", "jcId"
+) VALUES (
+  'Jorge', 'Sanchez', 'j@example.com', 
+  '$2b$10$Cbfz1X7PSPQVQU/nd8T1IOLaN48Nny3vYYT.7szbwUheMjIVhgntK',
+  true, true, NOW(), NOW(), 1, 1
+);
+
+ UPDATE usuario
+SET password = '$2b$10$sC4VRjngXnwJ8rUZcX1V6ObXWJVKmxl1rtuNsFQJgfMbXXBeba1fe'
+WHERE email = 'j@example.com';
+
+
+SELECT 
+    email, 
+    password, 
+    LENGTH(password) AS hash_length 
+FROM usuario 
+WHERE email = 'j@example.com';

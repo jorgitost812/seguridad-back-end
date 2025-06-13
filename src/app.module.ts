@@ -12,6 +12,7 @@ import { iniSesionModule } from './usuarios/inisesion.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
 import { PDFModule } from './pdf/pdf.module';
+import { ReportesModule } from './accesos/accesos.module';
 
 
 @Module({
@@ -30,7 +31,7 @@ import { PDFModule } from './pdf/pdf.module';
       retryAttempts: 10
     }),
     ProvinciasModule, MunicipiosModule, JovenclubModule, PcModule,cAccesosModule,iniSesionModule,  
-    RolesModule,funcionesRolesModule, UsuariosModule, AuthModule, PDFModule
+    RolesModule,funcionesRolesModule, UsuariosModule, AuthModule, PDFModule,ReportesModule
   ],
   controllers: [AppController],
   providers: [],
