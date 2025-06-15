@@ -3,11 +3,15 @@ import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { SETTINGS } from "src/app.utils";
 import { LoginUserDto } from "./dto/login-user.dto";
+import { iniSesionService } from "../usuarios/services/inisesion.service";
 
 @Controller('api/auth')
 @ApiTags('auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) {}
+    constructor(
+        private readonly authService: AuthService,
+        private readonly iniSesionService: iniSesionService
+    ) {}
 
     @Post('login')
     @ApiOperation({ summary: 'Login user' })
@@ -17,6 +21,10 @@ export class AuthController {
         console.log('Login request received for:', loginUserDto.email);
         try {
             const result = await this.authService.login(loginUserDto);
+            // Register login trace
+            await this.iniSesionService.create({
+                email: loginUserDto.email
+            });
             console.log('Login successful');
             return result;
         } catch (error) {
