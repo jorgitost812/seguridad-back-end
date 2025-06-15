@@ -56,26 +56,41 @@
               <v-container>
                 <v-row>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.nombre" label="Nombre">
-                    </v-text-field>
+                    <v-text-field
+  v-model="editedItem.nombre"
+  label="Nombre"
+  :rules="[v => !!v || 'Nombre es requerido']"
+  required
+></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field
-                      v-model="editedItem.apellidos"
-                      label="Apellidos"
-                    ></v-text-field>
+  v-model="editedItem.apellidos"
+  label="Apellidos"
+  :rules="[v => !!v || 'Apellidos son requeridos']"
+  required
+></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field
-                      v-model="editedItem.email"
-                      label="Correo"
-                    ></v-text-field>
+  v-model="editedItem.email"
+  label="Correo"
+  type="email"
+  :rules="[
+    v => !!v || 'Email es requerido',
+    v => /.+@.+\..+/.test(v) || 'Email debe ser válido'
+  ]"
+  required
+></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field type="password"
-                      v-model="editedItem.password"
-                      label="Contrasena"
-                    ></v-text-field>
+                    <v-text-field
+    v-model="editedItem.password"
+    label="Contraseña"
+    type="password"
+    :rules="passwordRules"
+    required
+  ></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4" >
                     <v-checkbox 
@@ -85,19 +100,21 @@
                   </v-col>
                   <v-col cols="12" sm="6" md="4" v-if="user.rol.id <4">
                     <v-select 
-                    :items="jcs" 
-                    label="Joven Club" 
-                    item-text="nombre" 
-                    item-value="id" 
-                    v-model="editedItem.jc"></v-select>
+    :items="jcs" 
+    label="Joven Club" 
+    item-text="nombre" 
+    item-value="id" 
+    v-model="editedItem.jcId">  <!-- Changed from jc to jcId -->
+  </v-select>
                   </v-col>
                   <v-col cols="12" sm="6" md="4" v-if="user.rol.id <4">
-                    <v-select  
-                      :items="roles"
-                      label="Roles"
-                      item-text="nombre"
-                      item-value="id" 
-                      v-model="editedItem.rol"></v-select>
+                    <v-select 
+    :items="roles" 
+    label="Roles"
+    item-text="nombre"
+    item-value="id" 
+    v-model="editedItem.rolId">  <!-- Changed from rol to rolId -->
+  </v-select>
                      
                   </v-col>
                   
@@ -178,6 +195,12 @@
 <script>
 export default {
   data: () => ({
+    passwordRules: [
+      v => !!v || 'La contraseña es requerida',
+      v => v.length >= 8 || 'Mínimo 8 caracteres',
+      v => /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[#?!@$%^&*-])[A-Za-z0-9#?!@$%^&*-]{8,}$/.test(v) || 
+           'Debe contener mayúscula, minúscula, número y carácter especial'
+    ],
     loading: false,
     dialog: false,
     dialogTras: false,
@@ -199,16 +222,15 @@ export default {
     munis: [],
     editedIndex: -1,
     editedItem: {
-      email: "",
-      password: "",
-      confirmPassword: "",
-      nombre: "",
-      apellidos: "",
-      grupo_municipal: false,
-      jc: "",
-      rol: "",
-    
-    },
+  nombre: "",
+  apellidos: "",
+  email: "",
+  password: "",
+  grupo_municipal: false,
+  jcId: null,  // maps to jcId
+  rolId: null, // maps to rolId
+  activo: true
+},
     defaultItem: {
       email: "",
       password: "",
@@ -216,12 +238,15 @@ export default {
       nombre: "",
       apellidos: "",
       grupo_municipal: false,
-      jc: "",
-      rol: "",
+      jcId: "",
+      rolId: "",
     },
   }),
 
   computed: {
+    canEditUser() {
+    return this.user?.rol?.id === 1 || this.user?.rol?.id === 2;
+  },
     formTitle() {
      return this.editedIndex === -1 ? 'Nuevo registro' : 'Editando registro'
     },
@@ -397,40 +422,94 @@ export default {
     },
 
     async save() {
-      if(this.editedItem.grupo_municipal === null)
-        this.editedItem.grupo_municipal= false;
-      //if(this.user.rol.id <3) {
-      //  this.editedItem.grupo_municipal= false;
-      //  }
-      //else{
-      //  this.editedItem.grupo_municipal= true;
-      //}   
-              
-      //Se ejecuta para modificar uno existente
-      
-      if (this.editedIndex > -1) {
-        try{
-        // Object.assign(this.items[this.editedIndex], this.editedItem)
-        await this.$axios.put(`api/usuarios/${this.items[this.editedIndex].id}`, this.editedItem);
-        this.callAlert({status: true, message: 'Se modifico satifactoriamente', color: 'primary'});
-        this.initialize();
-        }catch (error) {
-            this.callAlert({status: true, message: 'No se modifico ', color: 'error'});
-          }
-      } else {
-        // Se ejecuta para crear uno nuevo
-        try {
-          alert(this.editedItem.rol);
-          this.editedItem.confirmPassword=this.editedItem.password;
-          await this.$axios.post("api/usuarios", this.editedItem);
-          this.callAlert({status: true, message: 'Se agrego satifactoriamente', color: 'primary'});
-          this.initialize();
-        } catch (error) {
-         this.callAlert({status: true, message: 'No se agrego ', color: 'error'});
-        }
+  try {
+    // 1. Validate required fields first
+    if (!this.editedItem.nombre || !this.editedItem.apellidos || !this.editedItem.email) {
+      this.callAlert({
+        status: true,
+        message: 'Los campos Nombre, Apellidos y Correo son obligatorios',
+        color: 'error'
+      });
+      return;
+    }
+
+    // 2. Create new user
+    if (this.editedIndex === -1) {
+      // Validate password
+      if (!this.editedItem.password) {
+        this.callAlert({
+          status: true,
+          message: 'La contraseña es obligatoria para nuevos usuarios',
+          color: 'error'
+        });
+        return;
       }
-      this.close();
-    },
+
+      // Validate role and JC
+      if (!this.editedItem.rolId || !this.editedItem.jcId) {
+        this.callAlert({
+          status: true,
+          message: 'Debe seleccionar un Rol y un Joven Club',
+          color: 'error'
+        });
+        return;
+      }
+
+      const newUser = {
+        nombre: this.editedItem.nombre,
+        apellidos: this.editedItem.apellidos,
+        email: this.editedItem.email,
+        password: this.editedItem.password,
+        confirmPassword: this.editedItem.password,
+        grupo_municipal: this.editedItem.grupo_municipal || false,
+        rolId: parseInt(this.editedItem.rolId),
+        jcId: parseInt(this.editedItem.jcId || this.jcx),
+        activo: true
+      };
+
+      console.log('Creating new user:', newUser);
+      await this.$axios.post("api/usuarios", newUser);
+      this.callAlert({
+        status: true,
+        message: 'Usuario creado exitosamente',
+        color: 'success'
+      });
+    } else {
+      // 3. Update existing user
+      const updateData = {
+        ...this.editedItem,
+        rolId: parseInt(this.editedItem.rolId),
+        jcId: parseInt(this.editedItem.jcId)
+      };
+      
+      if (!updateData.password) {
+        delete updateData.password;
+      } else {
+        updateData.confirmPassword = updateData.password;
+      }
+
+      await this.$axios.put(
+        `api/usuarios/${this.items[this.editedIndex].id}`,
+        updateData
+      );
+      this.callAlert({
+        status: true,
+        message: 'Usuario actualizado exitosamente',
+        color: 'success'
+      });
+    }
+
+    await this.initialize();
+    this.close();
+  } catch (error) {
+    console.error('Error saving user:', error.response?.data);
+    this.callAlert({
+      status: true,
+      message: error.response?.data?.message || 'Error al guardar el usuario',
+      color: 'error'
+    });
+  }
+},
   },
 };
 </script>

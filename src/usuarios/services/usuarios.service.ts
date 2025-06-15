@@ -24,11 +24,22 @@ export class UsuariosService {
       relations: ['jc', 'rol', 'jc.municipio', 'jc.municipio.provincia']
     });
    }
-   async create(createUsuarioDto: CreateUsuarioDto){
-      console.log('Usuario: '+createUsuarioDto.email +' fue agregado');
-       const nuevaTarea = await this.usuariosRepo.create(createUsuarioDto);
-       return this.usuariosRepo.save(nuevaTarea);
-   } 
+   async create(createUsuarioDto: CreateUsuarioDto) {
+    console.log('Creating user with data:', createUsuarioDto);
+    
+    const usuario = this.usuariosRepo.create({
+      nombre: createUsuarioDto.nombre,
+      apellidos: createUsuarioDto.apellidos,
+      email: createUsuarioDto.email,
+      password: createUsuarioDto.password,
+      grupo_municipal: createUsuarioDto.grupo_municipal || false,
+      rol: { id: createUsuarioDto.rolId },
+      jc: { id: createUsuarioDto.jcId },
+      activo: true
+    });
+
+    return this.usuariosRepo.save(usuario);
+ }
    async findByEmail(email: string): Promise<Usuario | null> {
     return this.usuariosRepo.findOne({
       where: { email } as FindOptionsWhere<Usuario>
