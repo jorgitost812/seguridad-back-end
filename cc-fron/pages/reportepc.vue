@@ -3,7 +3,7 @@
     <v-data-table
       style="background-color: #fff9c4"
       :headers="headers"
-      :items="accessos"
+      :items="filteredAccesos"
       sort-by="id"
       class="elevation-5"
     >
@@ -162,6 +162,8 @@ import download from "downloadjs";
 export default {
   middleware: 'auth',
   data: () => ({
+    filteredAccesos: [], // Add this
+    allAccesos: [],
     usuarioActivo: "",
     loading: false,
     dialog: false,
@@ -242,8 +244,12 @@ export default {
     },
     jcx: {
       handler: function(val) {
-          this.editedItem.jc = this.jcx;
-          this.initialize();
+        if (val) {
+          const selectedJC = this.jcs.find(jc => jc.id === val);
+          if (selectedJC) {
+            this.filterByJC(selectedJC.nombre);
+          }
+        }
       },
       deep: true
     },
@@ -265,42 +271,69 @@ export default {
   },
 
   async created() {
-    try {
-      const user = this.$auth.user;
-      if (!user?.jc?.nombre) {
-        throw new Error('No JC found for user');
-      }
-      
-      await this.$store.dispatch('reportepc/getAccesosPC', user.jc.id);
-    } catch (error) {
-      console.error('Error in created:', error);
+  try {
+    await this.initialize();
+    if (this.$auth.user?.jc?.nombre) {
+      this.filterByJC(this.$auth.user.jc.nombre);
     }
-  },
+  } catch (error) {
+    console.error('Error in created:', error);
+  }
+},
 
   methods: {
     callAlert(objetoAlerta) {
       return this.$store.commit("alert/setAlert", objetoAlerta);
     },
 
-    async initialize(jcNombre) {
-      try {
-        this.loading = true;
-        const { data } = await this.$axios.get(`api/reportes/pc/${jcNombre}`);
-        this.accesos = data;
-      } catch (error) {
-        console.error('Error loading accesos:', error);
-      } finally {
-        this.loading = false;
-      }
-    },
+    async initialize() {
+    try {
+      this.loading = true;
+      
+      const { data } = await this.$axios.get('api/accesos', {
+        headers: {
+          'Authorization': `Bearer ${this.$auth.strategy.token.get()}`
+        }
+      });
+      
+      // Format dates and assign data
+      this.allAccesos = data.map(acceso => ({
+        ...acceso,
+        createdAt: this.lee_fecha(acceso.createdAt)
+      }));
+      
+      this.filteredAccesos = this.allAccesos;
+      
+    } catch (error) {
+      console.error('Error loading accesos:', error);
+      this.callAlert({
+        status: true,
+        message: 'Error cargando datos',
+        color: 'error'
+      });
+    } finally {
+      this.loading = false;
+    }
+  },
 
-    async filtrarPorJC(filter) {
-      try {
-        const { data } = await this.$axios.get('api/accesos/by/' + JSON.stringify(filter));
-        this.accessos = data;
-      } catch (error) {
-        console.log(error);
-      }
+  lee_fecha(val) {
+    if (!val) return '';
+    const date = new Date(val);
+    return date.toLocaleString('es-ES', {
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  },
+
+    filterByJC(jcNombre) {
+      if (!jcNombre) return;
+      
+      this.filteredAccesos = this.allAccesos.filter(
+        acceso => acceso.nombrejc === jcNombre
+      );
     },
 
     async filter() {

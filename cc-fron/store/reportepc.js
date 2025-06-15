@@ -20,21 +20,12 @@ export const actions = {
   async getAccesosPC({ commit }, jcId) {
     try {
       commit('setLoading', true);
-      commit('setError', null);
-
-      if (!jcId) {
-        throw new Error('ID de Joven Club no válido');
-      }
-
-      const { data } = await this.$axios.get(`/api/accesos/by_joven_club/${jcId}`);
+      const { data } = await this.$axios.get(`api/accesos/by_joven_club/${jcId}`);
       commit('setAccesosPC', data);
-
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message;
-      commit('setError', errorMessage);
-      console.error('Error obteniendo accesos:', errorMessage);
+      commit('setError', error.message);
     } finally {
-      commit('setLoading', false);
+      commit('setLoading', false); 
     }
   }
 }

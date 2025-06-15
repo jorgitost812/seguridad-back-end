@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Get, Injectable, InternalServerErrorException, Logger, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { logger } from 'handlebars';
 import { json } from 'stream/consumers';
@@ -6,6 +6,7 @@ import { getRepository, Repository } from 'typeorm';
 
 import { cAccesos } from '../entities/caccesos.entity';
 import { CreateAccesoDto } from '../dto/create-accesos.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Injectable()
 export class cAccesosService {
@@ -27,18 +28,32 @@ export class cAccesosService {
     }
   }
   async findByJovenClub(jcId: string): Promise<cAccesos[]> {
-
     return await this.caccesosRepo.find({
-
-        where: { nombrejc: jcId }
-
+      where: { nombrejc: jcId }
     });
+  }
 
-}
-
-  findAll() {
-console.log('find1');
-    return this.caccesosRepo.find();
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async findAll() {
+    try {
+      const accesos = await this.caccesosRepo.find({
+        select: {
+          nombrejc: true,
+          nombrepc: true, 
+          tecnico: true,
+          supervisor: true,
+          causa: true,
+          createdAt: true
+        },
+        order: {
+          createdAt: 'DESC'
+        }
+      });
+      return accesos;
+    } catch (error) {
+      throw new InternalServerErrorException('Error al obtener accesos');
+    }
   }
   findOne(id: number) {
     return this.caccesosRepo.findOne({ where: { id } });

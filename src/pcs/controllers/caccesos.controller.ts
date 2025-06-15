@@ -12,11 +12,10 @@ export class cAccesosController {
        private caccesosService: cAccesosService 
     ) {}
 	
-    @UseGuards(JwtAuthGuard)
     @Get()
-    getAll(){
-        return this.caccesosService.findAll();
-        
+    @UseGuards(JwtAuthGuard)
+    getAll() {
+      return this.caccesosService.findAll();
     }
 
     @UseGuards(JwtAuthGuard)
@@ -99,15 +98,10 @@ async create(@Body() createAccesoDto: CreateAccesoDto) {
 
     
     @Get('by_joven_club/:jcId')
-    @UseGuards(JwtAuthGuard)
-    async getAccesosByJovenClub(@Param('jcId') jcId: string) {
-      try {
-        return await this.caccesosService.findByJovenClub(jcId);
-      } catch (error) {
-        throw new BadRequestException(
-          `Error al obtener accesos: ${error.message}`
-        );
-      }
-    }
+@UseGuards(JwtAuthGuard)
+async getAccesosByJovenClub(@Param('jcId') jcId: string) {
+  if (!jcId) throw new BadRequestException('Parámetro jcId requerido');
+  return this.caccesosService.findByJovenClub(jcId);
+}
 	
 }
