@@ -12,9 +12,17 @@
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-dialog v-model="dialog" >
           <template v-slot:activator="{ on, attrs }">
-            <v-btn small class="ml-2" color="primary" fab v-bind="attrs" v-on="on" :disabled="user.rol.id !== 4">
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
+            <v-btn 
+    small 
+    class="ml-2" 
+    color="primary" 
+    fab 
+    v-bind="attrs" 
+    v-on="on" 
+    :disabled="!canAddPC"
+  >
+    <v-icon>mdi-plus</v-icon>
+  </v-btn>
                                   
             <v-col  cols="12" sm="6" md="4" >
               <v-row>
@@ -179,12 +187,16 @@ export default {
       nombre: "",
       numero: "",
       ip: "",
+      setup: "",
+      admin: "",
       jc: null,
     },
     defaultItem: {
       nombre: "",
       numero: "",
       ip: "",
+      setup: "",
+      admin: "", 
       jc: null,
     },
   }),
@@ -201,6 +213,9 @@ export default {
     },
     municipios() {
       return this.$store.state.municipios.list;
+    },
+    canAddPC() {
+      return this.user && this.user.rol && this.user.rol.id === 1;
     },
   },
     
@@ -239,6 +254,9 @@ export default {
 
   async created() {
   try {
+    if (!this.canAddPC) {
+        console.warn('Usuario no tiene permisos para agregar PCs');
+      }
     this.$store.dispatch('roles/getRoles');
     await this.$store.dispatch('provincias/getProvincias');
     
@@ -376,34 +394,58 @@ async initialize() {
     },
 
     async save() {
-      
-        // alert(this.editedItem.numero+"-"+this.editedItem.jc);
-      //Se ejeucata para modificar uno existente
-      if (this.editedIndex > -1) {
-        try{
-      // Object.assign(this.items[this.editedIndex], this.editedItem)
-        await this.$axios.put(`api/pcs/${this.items[this.editedIndex].id}`, this.editedItem);
-        this.callAlert({status: true, message: 'Se modifico satifactoriamente', color: 'primary'});
-        this.initialize();
-        }catch (error) {
-            this.callAlert({status: true, message: 'No se modifico ', color: 'error'});
-          }
-      } else {
-        // Se ejecuta para crear uno nuevo
-        try {
-          //this.editedItem.confirmPassword=this.editedItem.password;
-          if(this.user.rol.id ===4) {
-            this.editedItem.jc= this.user.jc.id;
-          } 
-          await this.$axios.post("api/pcs", this.editedItem);
-          this.callAlert({status: true, message: 'Se agrego satifactoriamente', color: 'primary'});
-          this.initialize();
-        } catch (error) {
-         this.callAlert({status: true, message: 'No se agrego ', color: 'error'});
+      try {
+        if (!this.editedItem.nombre || !this.editedItem.numero || !this.editedItem.ip) {
+          this.callAlert({
+            status: true,
+            message: 'Los campos Nombre, N. Inventario e IP son requeridos',
+            color: 'warning'
+          });
+          return;
         }
+
+        if (this.editedIndex > -1) {
+          // Update existing PC
+          await this.$axios.put(`api/pcs/${this.items[this.editedIndex].id}`, this.editedItem);
+          this.callAlert({
+            status: true, 
+            message: 'Se modificó correctamente', 
+            color: 'success'
+          });
+        } else {
+          // Create new PC
+          const newPC = {
+            ...this.editedItem,
+            jc: this.user.rol.id === 4 ? this.user.jc.id : this.editedItem.jc
+          };
+
+          await this.$axios.post("api/pcs", newPC);
+          this.callAlert({
+            status: true,
+            message: 'Se agregó correctamente',
+            color: 'success'
+          });
+        }
+
+        await this.initialize();
+        this.close();
+      } catch (error) {
+        console.error('Error saving PC:', error);
+        this.callAlert({
+          status: true,
+          message: error.response?.data?.message || 'Error al guardar la computadora',
+          color: 'error'
+        });
       }
-      this.close();
-      //this.closeTras();
+    },
+
+    close() {
+      this.dialog = false;
+      this.dialogTras = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
     },
   },
 };
