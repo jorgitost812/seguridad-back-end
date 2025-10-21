@@ -122,10 +122,10 @@
               </v-container>
             </v-card-text>
             <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="close">Cancelar</v-btn>
-              <v-btn color="blue darken-1" text @click="save">Guardar</v-btn>
-            </v-card-actions>
+  <v-spacer></v-spacer>
+  <v-btn color="blue darken-1" text @click="close">Cancelar</v-btn>
+  <v-btn color="blue darken-1" text @click="save">Guardar</v-btn>
+</v-card-actions>
           </v-card>
         </v-dialog>
         <v-dialog v-model="dialogDelete" max-width="300px">
@@ -171,10 +171,10 @@
             </v-card-text>
 
             <v-card-actions>
-              <v-spacer></v-spacer>
-              <!-- <v-btn color="blue darken-1" text @click="close">Cancelar</v-btn> -->
-              <v-btn color="blue darken-1" text @click="save"> Guardar </v-btn>
-            </v-card-actions>
+  <v-spacer></v-spacer>
+  <v-btn color="blue darken-1" text @click="close">Cancelar</v-btn>
+  <v-btn color="blue darken-1" text @click="save">Guardar</v-btn>
+</v-card-actions>
           </v-card>
         </v-dialog>
       </v-toolbar>
@@ -196,11 +196,13 @@
 export default {
   data: () => ({
     passwordRules: [
-      v => !!v || 'La contraseña es requerida',
-      v => v.length >= 8 || 'Mínimo 8 caracteres',
-      v => /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[#?!@$%^&*-])[A-Za-z0-9#?!@$%^&*-]{8,}$/.test(v) || 
-           'Debe contener mayúscula, minúscula, número y carácter especial'
-    ],
+    v => !!v || 'La contraseña es requerida',
+    v => (v || '').length >= 8 || 'La contraseña debe tener al menos 8 caracteres',
+    v => /[A-Z]/.test(v || '') || 'Debe contener al menos una mayúscula',
+    v => /[a-z]/.test(v || '') || 'Debe contener al menos una minúscula', 
+    v => /[0-9]/.test(v || '') || 'Debe contener al menos un número',
+    v => /[#?!@$%^&*-]/.test(v || '') || 'Debe contener al menos un carácter especial'
+  ],
     loading: false,
     dialog: false,
     dialogTras: false,
@@ -313,9 +315,32 @@ export default {
         color: 'error'
       })
     }
+    const id = this.$route.params.id;
+  if (id) {
+    await this.loadUser(id);
+    this.dialog = true;
+  }
   },
 
   methods: {
+    async loadUser(id) {
+    try {
+      const { data } = await this.$axios.get(`api/usuarios/${id}`);
+      this.editedItem = {
+        id: data.id,
+        nombre: data.nombre,
+        apellidos: data.apellidos,
+        email: data.email,
+        grupo_municipal: data.grupo_municipal,
+        rolId: data.rol.id,
+        jcId: data.jc.id,
+        activo: data.activo
+      };
+    } catch (error) {
+      console.error('Error loading user:', error);
+      this.$router.push('/user');
+    }
+  },
     async loadInitialData() {
       this.loading = true
       try {
@@ -376,20 +401,49 @@ export default {
       this.editedItem = Object.assign({}, item);
       this.dialogTras = true;
     },
-    closeTras() {
-      //this.dialogTras = false;
+    close() {
+      this.dialog = false;
+      this.dialogTras = false;
+      this.dialogDelete = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
     },
-    editItem(item) {
-      
-      this.editedIndex = this.items.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
+    closeTras() {
+      this.dialogTras = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
     },
-    
+    async editItem(item) {
+      try {
+        this.loading = true;
+        this.editedIndex = this.items.indexOf(item);
+        this.editedItem = {
+          id: item.id,
+          nombre: item.nombre,
+          apellidos: item.apellidos,
+          email: item.email,
+          grupo_municipal: item.grupo_municipal,
+          rolId: item.rol?.id,
+          jcId: item.jc?.id,
+          activo: item.activo
+        };
+        console.log('Editing item:', this.editedItem);
+        this.dialog = true;
+      } catch (error) {
+        console.error('Edit error:', error);
+        this.callAlert({
+          status: true,
+          message: 'Error al cargar usuario',
+          color: 'error'
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
     deleteItem(item) {
       this.editedIndex = this.items.indexOf(item);
       this.editedItem = Object.assign({}, item);
@@ -404,15 +458,6 @@ export default {
       this.closeDelete();
     },
 
-    close() {
-      this.dialog = false;
-      this.dialogTras = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
-
     closeDelete() {
       this.dialogDelete = false;
       this.$nextTick(() => {
@@ -422,95 +467,102 @@ export default {
     },
 
     async save() {
-  try {
-    // 1. Validate required fields first
-    if (!this.editedItem.nombre || !this.editedItem.apellidos || !this.editedItem.email) {
-      this.callAlert({
-        status: true,
-        message: 'Los campos Nombre, Apellidos y Correo son obligatorios',
-        color: 'error'
-      });
-      return;
-    }
+      try {
+        if (this.dialogTras) {
+          // Handle transfer save logic
+          await this.$axios.put(`api/usuarios/${this.editedItem.id}/transfer`, {
+            jcId: this.editedItem.jcId || this.jcx
+          });
+          this.callAlert({
+            status: true,
+            message: 'Usuario trasladado exitosamente',
+            color: 'success'
+          });
+        } else {
+          // Regular save logic remains the same
+          if (!this.editedItem.nombre || !this.editedItem.apellidos || !this.editedItem.email) {
+            this.callAlert({
+              status: true,
+              message: 'Los campos Nombre, Apellidos y Correo son obligatorios',
+              color: 'error'
+            });
+            return;
+          }
 
-    // 2. Create new user
-    if (this.editedIndex === -1) {
-      // Validate password
-      if (!this.editedItem.password) {
+          if (this.editedIndex === -1) {
+            if (!this.editedItem.password) {
+              this.callAlert({
+                status: true,
+                message: 'La contraseña es obligatoria para nuevos usuarios',
+                color: 'error'
+              });
+              return;
+            }
+
+            if (!this.editedItem.rolId || !this.editedItem.jcId) {
+              this.callAlert({
+                status: true,
+                message: 'Debe seleccionar un Rol y un Joven Club',
+                color: 'error'
+              });
+              return;
+            }
+
+            const newUser = {
+              nombre: this.editedItem.nombre,
+              apellidos: this.editedItem.apellidos,
+              email: this.editedItem.email,
+              password: this.editedItem.password,
+              confirmPassword: this.editedItem.password,
+              grupo_municipal: this.editedItem.grupo_municipal || false,
+              rolId: parseInt(this.editedItem.rolId),
+              jcId: parseInt(this.editedItem.jcId || this.jcx),
+              activo: true
+            };
+
+            console.log('Creating new user:', newUser);
+            await this.$axios.post("api/usuarios", newUser);
+            this.callAlert({
+              status: true,
+              message: 'Usuario creado exitosamente',
+              color: 'success'
+            });
+          } else {
+            const updateData = {
+              nombre: this.editedItem.nombre,
+              apellidos: this.editedItem.apellidos,
+              email: this.editedItem.email,
+              grupo_municipal: this.editedItem.grupo_municipal,
+              rolId: parseInt(this.editedItem.rolId),
+              jcId: parseInt(this.editedItem.jcId),
+              activo: this.editedItem.activo
+            };
+
+            if (this.editedItem.password) {
+              updateData.password = this.editedItem.password;
+              updateData.confirmPassword = this.editedItem.password;
+            }
+
+            console.log('Updating user:', updateData);
+            await this.$axios.put(
+              `api/usuarios/${this.items[this.editedIndex].id}`, 
+              updateData
+            );
+          }
+        }
+
+        await this.initialize();
+        this.close();
+      } catch (error) {
+        console.error('Error saving user:', error.response?.data);
         this.callAlert({
           status: true,
-          message: 'La contraseña es obligatoria para nuevos usuarios',
+          message: error.response?.data?.message || 'Error al guardar el usuario',
           color: 'error'
         });
-        return;
       }
-
-      // Validate role and JC
-      if (!this.editedItem.rolId || !this.editedItem.jcId) {
-        this.callAlert({
-          status: true,
-          message: 'Debe seleccionar un Rol y un Joven Club',
-          color: 'error'
-        });
-        return;
-      }
-
-      const newUser = {
-        nombre: this.editedItem.nombre,
-        apellidos: this.editedItem.apellidos,
-        email: this.editedItem.email,
-        password: this.editedItem.password,
-        confirmPassword: this.editedItem.password,
-        grupo_municipal: this.editedItem.grupo_municipal || false,
-        rolId: parseInt(this.editedItem.rolId),
-        jcId: parseInt(this.editedItem.jcId || this.jcx),
-        activo: true
-      };
-
-      console.log('Creating new user:', newUser);
-      await this.$axios.post("api/usuarios", newUser);
-      this.callAlert({
-        status: true,
-        message: 'Usuario creado exitosamente',
-        color: 'success'
-      });
-    } else {
-      // 3. Update existing user
-      const updateData = {
-        ...this.editedItem,
-        rolId: parseInt(this.editedItem.rolId),
-        jcId: parseInt(this.editedItem.jcId)
-      };
-      
-      if (!updateData.password) {
-        delete updateData.password;
-      } else {
-        updateData.confirmPassword = updateData.password;
-      }
-
-      await this.$axios.put(
-        `api/usuarios/${this.items[this.editedIndex].id}`,
-        updateData
-      );
-      this.callAlert({
-        status: true,
-        message: 'Usuario actualizado exitosamente',
-        color: 'success'
-      });
     }
-
-    await this.initialize();
-    this.close();
-  } catch (error) {
-    console.error('Error saving user:', error.response?.data);
-    this.callAlert({
-      status: true,
-      message: error.response?.data?.message || 'Error al guardar el usuario',
-      color: 'error'
-    });
   }
-},
-  },
 };
 </script>
 

@@ -152,8 +152,8 @@
     </template>
     <template v-slot:item.actions="{ item }">
       <v-icon small fab @click="irDetalles(item)"> mdi-eye </v-icon>
-      <v-icon v-if="user.rol.id === 4" small fab @click="editItem(item)" > mdi-pencil </v-icon>
-      <v-icon v-if="user.rol.id === 4" small fab @click="deleteItem(item)" > mdi-delete </v-icon>
+      <v-icon v-if="user.rol.id < 4" small fab @click="editItem(item)" > mdi-pencil </v-icon>
+      <v-icon v-if="user.rol.id < 4" small fab @click="deleteItem(item)" > mdi-delete </v-icon>
       <v-icon v-if="user.rol.id < 4" small fab @click="trasladoItem(item)" > mdi-camera-switch </v-icon>
       
     </template>
@@ -164,6 +164,7 @@
 </template>
 
 <script>
+import { encrypt } from '@/helpers/crypto.helper';
 
 export default {
   data: () => ({
@@ -345,11 +346,15 @@ async initialize() {
     });
   }
 },
-    editItem(item) {
-      this.editedIndex = this.items.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
-    },
+editItem(item) {
+  this.editedIndex = this.items.indexOf(item);
+  this.editedItem = Object.assign({}, item, {
+    // No mostrar las contraseñas encriptadas en el formulario
+    admin: '', // O podrías dejarlo como item.pwd si necesitas indicar que ya hay una contraseña
+    setup: ''
+  });
+  this.dialog = true;
+},
     trasladoItem(item) {
       this.editedIndex = this.items.indexOf(item);
       this.editedItem = Object.assign({}, item);
@@ -363,19 +368,55 @@ async initialize() {
       });
     },
     deleteItem(item) {
-      this.editedIndex = this.items.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialogDelete = true;
-    },
+  this.editedIndex = this.items.findIndex(pc => pc.id === item.id);
+  this.editedItem = Object.assign({}, item);
+  this.dialogDelete = true;
+},
    
 
-    async deleteItemConfirm() {
-      // this.items.splice(this.editedIndex, 1)
-      await this.$axios.delete(`api/pcs/${this.items[this.editedIndex].id}`);
-      this.callAlert({status: true, message: 'Se elimino satifactoriamente', color: 'primary'});
-      this.initialize();
-      this.closeDelete();
-    },
+async deleteItemConfirm() {
+  try {
+    // Validate PC exists before deletion
+    if (!this.items[this.editedIndex]?.id) {
+      throw new Error('PC ID no válido');
+    }
+
+    const pcId = this.items[this.editedIndex].id;
+    console.log('Intentando eliminar PC:', pcId);
+
+    const response = await this.$axios.delete(`api/pcs/${pcId}`, {
+      validateStatus: function (status) {
+        return status < 500; // Handle 4xx errors properly
+      }
+    });
+
+    if (response.status === 200) {
+      this.callAlert({
+        status: true,
+        message: 'Computadora eliminada correctamente',
+        color: 'success'
+      });
+      await this.initialize();
+    } else {
+      throw new Error(response.data.message || 'Error desconocido');
+    }
+
+  } catch (error) {
+    console.error('Error completo:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+
+    this.callAlert({
+      status: true,
+      message: `Error: ${error.response?.data?.message || error.message || 'Error al eliminar'}`,
+      color: 'error'
+    });
+  } finally {
+    this.closeDelete();
+  }
+},
 
     close() {
       this.dialog = false;this.dialogTras = false;
@@ -386,59 +427,77 @@ async initialize() {
     },
 
     closeDelete() {
-      this.dialogDelete = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
+  this.dialogDelete = false;
+  this.$nextTick(() => {
+    this.editedItem = Object.assign({}, this.defaultItem);
+    this.editedIndex = -1;
+  });
+},
 
     async save() {
-      try {
-        if (!this.editedItem.nombre || !this.editedItem.numero || !this.editedItem.ip) {
-          this.callAlert({
-            status: true,
-            message: 'Los campos Nombre, N. Inventario e IP son requeridos',
-            color: 'warning'
-          });
-          return;
-        }
+  try {
+    if (!this.editedItem.nombre || !this.editedItem.numero || !this.editedItem.ip) {
+      this.callAlert({
+        status: true,
+        message: 'Los campos Nombre, N. Inventario e IP son requeridos',
+        color: 'warning'
+      });
+      return;
+    }
 
-        if (this.editedIndex > -1) {
-          // Update existing PC
-          await this.$axios.put(`api/pcs/${this.items[this.editedIndex].id}`, this.editedItem);
-          this.callAlert({
-            status: true, 
-            message: 'Se modificó correctamente', 
-            color: 'success'
-          });
-        } else {
-          // Create new PC
-          const newPC = {
-            ...this.editedItem,
-            jc: this.user.rol.id === 4 ? this.user.jc.id : this.editedItem.jc
-          };
+    // Create payload with basic data
+    const payload = {
+      nombre: this.editedItem.nombre,
+      numero: this.editedItem.numero,
+      ip: this.editedItem.ip,
+      jc: this.user.rol.id === 4 ? this.user.jc.id : this.editedItem.jc
+    };
 
-          await this.$axios.post("api/pcs", newPC);
-          this.callAlert({
-            status: true,
-            message: 'Se agregó correctamente',
-            color: 'success'
-          });
-        }
+    // Handle passwords - only update if changed
+    if (this.editedItem.admin && this.editedItem.admin !== this.items[this.editedIndex]?.pwd) {
+      payload.pwd = encrypt(this.editedItem.admin);
+    } else if (this.editedIndex === -1) {
+      // For new items, encrypt even if empty to avoid null
+      payload.pwd = encrypt(this.editedItem.admin || '');
+    }
 
-        await this.initialize();
-        this.close();
-      } catch (error) {
-        console.error('Error saving PC:', error);
-        this.callAlert({
-          status: true,
-          message: error.response?.data?.message || 'Error al guardar la computadora',
-          color: 'error'
-        });
-      }
-    },
+    if (this.editedItem.setup && this.editedItem.setup !== this.items[this.editedIndex]?.setupPwd) {
+      payload.setupPwd = encrypt(this.editedItem.setup);
+    } else if (this.editedIndex === -1) {
+      // For new items, encrypt even if empty to avoid null
+      payload.setupPwd = encrypt(this.editedItem.setup || '');
+    }
 
+    if (this.editedIndex > -1) {
+      // Update existing PC
+      await this.$axios.put(`api/pcs/${this.items[this.editedIndex].id}`, payload);
+      this.callAlert({
+        status: true,
+        message: 'Se modificó correctamente',
+        color: 'success'
+      });
+    } else {
+      // Create new PC
+      await this.$axios.post("api/pcs", payload);
+      this.callAlert({
+        status: true,
+        message: 'Se agregó correctamente',
+        color: 'success'
+      });
+    }
+
+    await this.initialize();
+    this.close();
+  } catch (error) {
+    console.error('Error saving PC:', error);
+    this.callAlert({
+      status: true,
+      message: error.response?.data?.message || 'Error al guardar la computadora',
+      color: 'error'
+    });
+  }
+}
+,
     close() {
       this.dialog = false;
       this.dialogTras = false;

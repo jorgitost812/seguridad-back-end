@@ -31,10 +31,20 @@ export class PcController {
         // return body;
     }
     @Delete(':id')
-    delete(@Param('id') id: number){
-        return this.pcService.delete(id);
-        //return true;
-    }
+async delete(@Param('id', ParseIntPipe) id: number) {
+  try {
+    const result = await this.pcService.delete(id);
+    return {
+      success: true,
+      message: 'PC eliminada correctamente'
+    };
+  } catch (error) {
+    throw new BadRequestException({
+      success: false,
+      message: error.message
+    });
+  }
+}
 
     @Get('by_joven_club/:idJc')
     async getComputadorasByJovenClub(

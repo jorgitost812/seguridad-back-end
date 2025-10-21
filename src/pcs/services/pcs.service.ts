@@ -42,10 +42,24 @@ export class PcService {
     this.pcsRepo.merge(tarea, body);
     return this.pcsRepo.save(tarea);
    } 
-   async delete(id: number){
-    await this.pcsRepo.delete(id);
-    return true;
-   }
+   async delete(id: number) {
+    try {
+      const pc = await this.pcsRepo.findOne({ 
+        where: { id },
+        relations: ['accesos'] 
+      });
+  
+      if (!pc) {
+        throw new Error('PC no encontrada');
+      }
+  
+      // Eliminar la PC y sus accesos relacionados
+      await this.pcsRepo.remove(pc);
+      return true;
+    } catch (error) {
+      throw new Error(`Error al eliminar PC: ${error.message}`);
+    }
+  }
 
    async findByJovenClub(idJc: number): Promise<Computadora[]> {
       // Validación adicional

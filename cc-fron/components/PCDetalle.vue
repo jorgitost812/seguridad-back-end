@@ -254,39 +254,48 @@ export default {
     },
     
     async save() {
-  try {
-    const payload = {
-      nombrejc: this.pc.jc?.nombre || 'No asignado',
-      nombrepc: String(this.pc.nombre),
-      inventario: String(this.pc.numero),
-      admin: false,
-      tecnico: String(this.user.email),
-      supervisor: String(this.supervisor.email),
-      causa: String(this.causa),
-      computadora_id: Number(this.pcID)
-      // Removed pcId as it's redundant with computadora_id
-    };
+      try {
+        // Validate supervisor before proceeding
+        if (!this.supervisor || !this.supervisor.email) {
+          this.callAlert({
+            status: true,
+            message: 'Seleccione un supervisor válido',
+            color: 'warning',
+          });
+          return;
+        }
 
-    const response = await this.$axios.post("/api/accesos", payload);
-    
-    if (response.data) {
-      this.showBoton = true;
-      this.show = true;
-      this.callAlert({
-        status: true,
-        message: 'Acceso registrado correctamente',
-        color: 'success'
-      });
+        const payload = {
+          nombrejc: this.pc.jc?.nombre || 'No asignado',
+          nombrepc: String(this.pc.nombre),
+          inventario: String(this.pc.numero),
+          admin: false,
+          tecnico: String(this.user.email),
+          supervisor: String(this.supervisor.email), // Ensure supervisor is valid
+          causa: String(this.causa),
+          computadora_id: Number(this.pcID),
+        };
+
+        const response = await this.$axios.post('/api/accesos', payload);
+
+        if (response.data) {
+          this.showBoton = true;
+          this.show = true;
+          this.callAlert({
+            status: true,
+            message: 'Acceso registrado correctamente',
+            color: 'success',
+          });
+        }
+      } catch (error) {
+        console.error('Error saving access:', error);
+        this.callAlert({
+          status: true,
+          message: error.response?.data?.message || 'Error al guardar acceso',
+          color: 'error',
+        });
+      }
     }
-  } catch (error) {
-    console.error('Error saving access:', error);
-    this.callAlert({
-      status: true,
-      message: error.response?.data?.message || 'Error al guardar acceso',
-      color: 'error'
-    });
-  }
-}
   }
 }
 </script>

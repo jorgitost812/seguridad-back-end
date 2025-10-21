@@ -28,6 +28,8 @@ setupPwd: object;
 @JoinColumn({ name: 'jc_id' })
 jc: Jclub;
 
-@OneToMany(() => Acceso, acceso => acceso.pc)
-    accesos: Acceso[];
+@OneToMany(() => Acceso, acceso => acceso.pc, {
+    onDelete: 'CASCADE' // Esto eliminará automáticamente los accesos relacionados
+  })
+  accesos: Acceso[];
 }

@@ -182,13 +182,13 @@ export default {
       admin: "",
     },
     headers: [
-    { text: 'JC', value: 'nombrejc' },
-      { text: 'PC', value: 'nombrepc' },
-      { text: 'Técnico', value: 'tecnico' },
-      { text: 'Supervisor', value: 'supervisor' },
-      { text: 'Causa', value: 'causa' },
-      { text: 'Fecha', value: 'createdAt' }
-    ],
+  { text: 'JC', value: 'nombrejc' },
+  { text: 'PC', value: 'nombrepc' },
+  { text: 'Técnico', value: 'tecnico' },
+  { text: 'Supervisor', value: 'supervisor' },
+  { text: 'Causa', value: 'causa' },
+  { text: 'Fecha', value: 'displayDate' }  // Changed from createdAt to displayDate
+],
     items: [],
     accessos: [],
     Misprovincias: [],
@@ -281,12 +281,22 @@ export default {
   }
 },
 
-  methods: {
-    callAlert(objetoAlerta) {
-      return this.$store.commit("alert/setAlert", objetoAlerta);
-    },
+  // 1. Remove the duplicate lee_fecha method and update the existing one
+methods: {
+  lee_fecha(val) {
+    if (!val) return '';
+    const date = new Date(val);
+    return date.toLocaleString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  },
 
-    async initialize() {
+  // 2. Update the initialize method
+  async initialize() {
     try {
       this.loading = true;
       
@@ -296,13 +306,17 @@ export default {
         }
       });
       
-      // Format dates and assign data
+      // Store original dates without modification
       this.allAccesos = data.map(acceso => ({
         ...acceso,
-        createdAt: this.lee_fecha(acceso.createdAt)
+        createdAt: acceso.createdAt // Keep original date
       }));
       
-      this.filteredAccesos = this.allAccesos;
+      // Apply date formatting only for display
+      this.filteredAccesos = this.allAccesos.map(acceso => ({
+        ...acceso,
+        displayDate: this.lee_fecha(acceso.createdAt)
+      }));
       
     } catch (error) {
       console.error('Error loading accesos:', error);
@@ -316,136 +330,17 @@ export default {
     }
   },
 
-  lee_fecha(val) {
-    if (!val) return '';
-    const date = new Date(val);
-    return date.toLocaleString('es-ES', {
-      day: '2-digit',
-      month: '2-digit', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  },
-
-    filterByJC(jcNombre) {
-      if (!jcNombre) return;
-      
-      this.filteredAccesos = this.allAccesos.filter(
-        acceso => acceso.nombrejc === jcNombre
-      );
-    },
-
-    async filter() {
-      //alert(`api/accesos/by/`+JSON.stringify(this.editedItem));//this.json
-
-      try {
-        this.dialog = false;
-
-        const {
-          nombrejc,
-          nombrepc,
-          causa,
-          tecnico,
-          admin,
-          supervisor,
-          inventario,
-        } = this.editedItem;
-        this.jsonX = this.editedItem;
-
-        let filter = {
-          nombrejc,
-          nombrepc,
-          causa,
-          tecnico,
-          admin,
-          inventario,
-          supervisor,
-        };
-
-        const { data } = await this.$axios.get('api/accesos/by/' + JSON.stringify(filter));
-
-        this.accessos = data;
-      } catch (error) {
-        alert(error);
-        console.log(error);
-      }
-    },
-    async pdf() {
-      await this.$axios
-        .get(`api/accesos/export/pdf/` + JSON.stringify(this.jsonX), {
-          responseType: "blob",
-        })
-        .then((result) => {
-          const content = result.headers["content-type"];
-          download(result.data, "Reporte.pdf", content);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    },
-    async actualizaJC() {
-      this.$store.dispatch("jcs/getJcsByMunicipio", this.municipio);
-    },
-    async actualizaMun() {
-      this.$store.dispatch("municipios/getMunByProvincia", this.provincia);
-    },
-    lee_fecha(val) {
-      var date = new Date(val);
-      return (
-        date.getDate() +
-        "/" +
-        (date.getMonth() + 1) +
-        "/" +
-        date.getFullYear() +
-        " " +
-        date.getHours() +
-        ":" +
-        date.getMinutes()
-      );
-      //date.getDate()+"/"+(date.getMonth()+1)+"/"+date.getFullYear();
-      //getHours()+":"+getMinutes()+":"+getSeconds()
-    },
-    editItem(item) {
-      this.editedIndex = this.items.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
-    },
-
-    deleteItem(item) {
-      this.editedIndex = this.items.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialogDelete = true;
-    },
-
-    async deleteItemConfirm() {
-      await this.$axios.delete(
-        `api/municipios/${this.items[this.editedIndex].id}`
-      );
-      this.callAlert({
-        status: true,
-        message: "Se elimino satifactoriamente",
-        color: "primary",
-      });
-      this.initialize();
-      this.closeDelete();
-    },
-
-    close() {
-      this.dialog = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
-
-    closeDelete() {
-      this.dialogDelete = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
-  },
+  // 3. Update the filterByJC method
+  filterByJC(jcNombre) {
+    if (!jcNombre) return;
+    
+    this.filteredAccesos = this.allAccesos
+      .filter(acceso => acceso.nombrejc === jcNombre)
+      .map(acceso => ({
+        ...acceso,
+        displayDate: this.lee_fecha(acceso.createdAt)
+      }));
+  }
+},
 };
 </script>
