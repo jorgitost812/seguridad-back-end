@@ -5,6 +5,8 @@ import { CreateUsuarioDto } from './../dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './../dto/update-usuario.dto';
 import { Usuario } from '../entities/usuario.entity';
 import { randomInt } from 'crypto';
+import { Rol } from 'src/roles/entities/role.entity';
+import { Jclub } from 'src/jcs/entities/jc.entity';
 //import { runInThisContext } from 'vm';
 
 @Injectable()
@@ -24,34 +26,82 @@ export class UsuariosService {
       relations: ['jc', 'rol', 'jc.municipio', 'jc.municipio.provincia']
     });
    }
-   async create(createUsuarioDto: CreateUsuarioDto) {
-    console.log('Creating user with data:', createUsuarioDto);
-    
-    const usuario = this.usuariosRepo.create({
-      nombre: createUsuarioDto.nombre,
-      apellidos: createUsuarioDto.apellidos,
-      email: createUsuarioDto.email,
-      password: createUsuarioDto.password,
-      grupo_municipal: createUsuarioDto.grupo_municipal || false,
-      rol: { id: createUsuarioDto.rolId },
-      jc: { id: createUsuarioDto.jcId },
-      activo: true
-    });
 
-    return this.usuariosRepo.save(usuario);
- }
+async create(createUsuarioDto: CreateUsuarioDto) {
+  console.log('Creating user with data:', createUsuarioDto);
+  
+  const usuario = this.usuariosRepo.create({
+    nombre: createUsuarioDto.nombre,
+    apellidos: createUsuarioDto.apellidos,
+    email: createUsuarioDto.email,
+    password: createUsuarioDto.password,
+    grupo_municipal: createUsuarioDto.grupo_municipal || false,
+    rol: { id: createUsuarioDto.rolId } as Rol,
+    jc: { id: createUsuarioDto.jcId } as Jclub,
+    activo: true
+  });
+
+  const savedUser = await this.usuariosRepo.save(usuario);
+  console.log('Usuario creado exitosamente:', savedUser.id);
+  return savedUser;
+}
    async findByEmail(email: string): Promise<Usuario | null> {
     return this.usuariosRepo.findOne({
       where: { email } as FindOptionsWhere<Usuario>
     });
   }
 
-   async update(id: number, updateUsuarioDto: UpdateUsuarioDto){
-      const tarea = await this.usuariosRepo.findOne({ where: { id } as FindOptionsWhere<Usuario> });
-      this.usuariosRepo.merge(tarea, updateUsuarioDto);
-      console.log('Usuario: '+ updateUsuarioDto.email +' fue actualizado');
-      return this.usuariosRepo.save(tarea);
-     } 
+  async update(id: number, updateUsuarioDto: UpdateUsuarioDto){
+    const usuario = await this.usuariosRepo.findOne({ 
+      where: { id } as FindOptionsWhere<Usuario>,
+      relations: ['rol', 'jc']
+    });
+    
+    if (!usuario) {
+      throw new Error('Usuario no encontrado');
+    }
+  
+    // Actualizar campos simples
+    if (updateUsuarioDto.nombre !== undefined) {
+      usuario.nombre = updateUsuarioDto.nombre;
+    }
+    if (updateUsuarioDto.apellidos !== undefined) {
+      usuario.apellidos = updateUsuarioDto.apellidos;
+    }
+    if (updateUsuarioDto.email !== undefined) {
+      usuario.email = updateUsuarioDto.email;
+    }
+    if (updateUsuarioDto.password !== undefined) {
+      usuario.password = updateUsuarioDto.password;
+    }
+    if (updateUsuarioDto.grupo_municipal !== undefined) {
+      usuario.grupo_municipal = updateUsuarioDto.grupo_municipal;
+    }
+    if (updateUsuarioDto.activo !== undefined) {
+      usuario.activo = updateUsuarioDto.activo;
+    }
+  
+    // Actualizar relaciones si se proporcionan
+    if (updateUsuarioDto.rolId !== undefined) {
+      usuario.rol = { id: updateUsuarioDto.rolId } as Rol;
+    }
+    if (updateUsuarioDto.jcId !== undefined) {
+      usuario.jc = { id: updateUsuarioDto.jcId } as Jclub;
+    }
+  
+    console.log('Usuario: '+ usuario.email +' fue actualizado');
+    console.log('Datos actualizados:', {
+      nombre: usuario.nombre,
+      apellidos: usuario.apellidos,
+      email: usuario.email,
+      grupo_municipal: usuario.grupo_municipal,
+      rolId: usuario.rol?.id,
+      jcId: usuario.jc?.id,
+      activo: usuario.activo
+    });
+  
+    return this.usuariosRepo.save(usuario);
+  } 
 
    async delete(id: number){
     await this.usuariosRepo.delete(id);

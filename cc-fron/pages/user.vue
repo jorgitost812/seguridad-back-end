@@ -196,13 +196,13 @@
 export default {
   data: () => ({
     passwordRules: [
-    v => !!v || 'La contraseña es requerida',
-    v => (v || '').length >= 8 || 'La contraseña debe tener al menos 8 caracteres',
-    v => /[A-Z]/.test(v || '') || 'Debe contener al menos una mayúscula',
-    v => /[a-z]/.test(v || '') || 'Debe contener al menos una minúscula', 
-    v => /[0-9]/.test(v || '') || 'Debe contener al menos un número',
-    v => /[#?!@$%^&*-]/.test(v || '') || 'Debe contener al menos un carácter especial'
-  ],
+      v => !!v || 'La contraseña es requerida',
+      v => (v || '').length >= 8 || 'La contraseña debe tener al menos 8 caracteres',
+      v => /[A-Z]/.test(v || '') || 'Debe contener al menos una mayúscula',
+      v => /[a-z]/.test(v || '') || 'Debe contener al menos una minúscula', 
+      v => /[0-9]/.test(v || '') || 'Debe contener al menos un número',
+      v => /[#?!@$%^&*-]/.test(v || '') || 'Debe contener al menos un carácter especial'
+    ],
     loading: false,
     dialog: false,
     dialogTras: false,
@@ -224,42 +224,42 @@ export default {
     munis: [],
     editedIndex: -1,
     editedItem: {
-  nombre: "",
-  apellidos: "",
-  email: "",
-  password: "",
-  grupo_municipal: false,
-  jcId: null,  // maps to jcId
-  rolId: null, // maps to rolId
-  activo: true
-},
-    defaultItem: {
-      email: "",
-      password: "",
-      confirmPassword: "",
+      id: null,
       nombre: "",
       apellidos: "",
+      email: "",
+      password: "",
       grupo_municipal: false,
-      jcId: "",
-      rolId: "",
+      jcId: null,
+      rolId: null,
+      activo: true
+    },
+    defaultItem: {
+      id: null,
+      nombre: "",
+      apellidos: "",
+      email: "",
+      password: "",
+      grupo_municipal: false,
+      jcId: null,
+      rolId: null,
+      activo: true
     },
   }),
 
   computed: {
     canEditUser() {
-    return this.user?.rol?.id === 1 || this.user?.rol?.id === 2;
-  },
+      return this.user?.rol?.id === 1 || this.user?.rol?.id === 2;
+    },
     formTitle() {
-     return this.editedIndex === -1 ? 'Nuevo registro' : 'Editando registro'
+      return this.editedIndex === -1 ? 'Nuevo registro' : 'Editando registro'
     },
     user() {
-        return this.$store.state.auth.user;
+      return this.$store.state.auth.user;
     },
-    
-     roles() {
+    roles() {
       return this.$store.state.roles.list;
     },
-    
     jcs() {
       return this.$store.state.jcs.list;
     },
@@ -267,12 +267,11 @@ export default {
       return this.$store.state.municipios.list;
     },
     provincias() {
-        return this.$store.state.provincias.list;
-      }
+      return this.$store.state.provincias.list;
+    }
   },
 
   watch: {
-     
     dialog(val) {
       val || this.close();
     },
@@ -280,27 +279,25 @@ export default {
       val || this.closeDelete();
     },
     jcx: {
-        handler: function(val) {
-          this.editedItem.jc = this.jcx;
-          this.initialize();
+      handler: function(val) {
+        this.initialize();
       },
-        deep: true
+      deep: true
     },
-     
     municipio: {
-         handler: function(val) { 
-         this.actualizaJC(); 
-         this.initialize();
-     },
-        deep: true
+      handler: function(val) { 
+        this.actualizaJC(); 
+        this.initialize();
+      },
+      deep: true
     },
     provincia: {
-         handler: function(val) { 
-         this.actualizaMun(); 
-         this.initialize();
+      handler: function(val) { 
+        this.actualizaMun(); 
+        this.initialize();
       },
-        deep: true
-      }
+      deep: true
+    }
   },
 
   async created() {
@@ -316,31 +313,34 @@ export default {
       })
     }
     const id = this.$route.params.id;
-  if (id) {
-    await this.loadUser(id);
-    this.dialog = true;
-  }
+    if (id) {
+      await this.loadUser(id);
+      this.dialog = true;
+    }
   },
 
   methods: {
     async loadUser(id) {
-    try {
-      const { data } = await this.$axios.get(`api/usuarios/${id}`);
-      this.editedItem = {
-        id: data.id,
-        nombre: data.nombre,
-        apellidos: data.apellidos,
-        email: data.email,
-        grupo_municipal: data.grupo_municipal,
-        rolId: data.rol.id,
-        jcId: data.jc.id,
-        activo: data.activo
-      };
-    } catch (error) {
-      console.error('Error loading user:', error);
-      this.$router.push('/user');
-    }
-  },
+      try {
+        const { data } = await this.$axios.get(`api/usuarios/${id}`);
+        this.editedItem = {
+          id: data.id,
+          nombre: data.nombre,
+          apellidos: data.apellidos,
+          email: data.email,
+          grupo_municipal: Boolean(data.grupo_municipal),
+          rolId: data.rol?.id || data.rolId,
+          jcId: data.jc?.id || data.jcId,
+          activo: data.activo,
+          password: '' // Siempre vacío al cargar
+        };
+        console.log('Loaded user data:', this.editedItem);
+      } catch (error) {
+        console.error('Error loading user:', error);
+        this.$router.push('/user');
+      }
+    },
+
     async loadInitialData() {
       this.loading = true
       try {
@@ -368,6 +368,7 @@ export default {
         this.loading = false
       }
     },
+
     async initialize() {
       try {
         console.log('Initializing with JC:', this.jcx)
@@ -383,24 +384,39 @@ export default {
         })
       }
     },
-    grupo_mcpal(val){
+
+    grupo_mcpal(val) {
       return val === true ? 'Sí' : 'No'  
     },   
+
     callAlert(objetoAlerta) {
-        return this.$store.commit('alert/setAlert', objetoAlerta)
-      },
-    actualizaJC(){
-        this.$store.dispatch('jcs/getJcsByMunicipio', this.municipio);
+      return this.$store.commit('alert/setAlert', objetoAlerta)
     },
-    actualizaMun(){
+
+    actualizaJC() {
+      this.$store.dispatch('jcs/getJcsByMunicipio', this.municipio);
+    },
+
+    actualizaMun() {
       this.$store.dispatch('municipios/getMunByProvincia', this.provincia);
-      
     },
-      trasladoItem(item) {
+
+    trasladoItem(item) {
       this.editedIndex = this.items.indexOf(item);
-      this.editedItem = Object.assign({}, item);
+      this.editedItem = {
+        id: item.id,
+        nombre: item.nombre,
+        apellidos: item.apellidos,
+        email: item.email,
+        grupo_municipal: item.grupo_municipal,
+        rolId: item.rol?.id,
+        jcId: item.jc?.id,
+        activo: item.activo,
+        password: ''
+      };
       this.dialogTras = true;
     },
+
     close() {
       this.dialog = false;
       this.dialogTras = false;
@@ -410,13 +426,7 @@ export default {
         this.editedIndex = -1;
       });
     },
-    closeTras() {
-      this.dialogTras = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
+
     async editItem(item) {
       try {
         this.loading = true;
@@ -426,12 +436,14 @@ export default {
           nombre: item.nombre,
           apellidos: item.apellidos,
           email: item.email,
-          grupo_municipal: item.grupo_municipal,
+          grupo_municipal: Boolean(item.grupo_municipal),
           rolId: item.rol?.id,
           jcId: item.jc?.id,
-          activo: item.activo
+          activo: item.activo,
+          password: '' // Siempre vacío al editar
         };
-        console.log('Editing item:', this.editedItem);
+        console.log('Editing item - Original:', item);
+        console.log('Editing item - Mapped:', this.editedItem);
         this.dialog = true;
       } catch (error) {
         console.error('Edit error:', error);
@@ -444,6 +456,7 @@ export default {
         this.loading = false;
       }
     },
+
     deleteItem(item) {
       this.editedIndex = this.items.indexOf(item);
       this.editedItem = Object.assign({}, item);
@@ -451,11 +464,23 @@ export default {
     },
 
     async deleteItemConfirm() {
-      // this.items.splice(this.editedIndex, 1)
-      await this.$axios.delete(`api/usuarios/${this.items[this.editedIndex].id}`);
-      this.callAlert({status: true, message: 'Se elimino satifactoriamente', color: 'primary'});
-      this.initialize();
-      this.closeDelete();
+      try {
+        await this.$axios.delete(`api/usuarios/${this.items[this.editedIndex].id}`);
+        this.callAlert({
+          status: true, 
+          message: 'Se eliminó satisfactoriamente', 
+          color: 'primary'
+        });
+        await this.initialize();
+        this.closeDelete();
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        this.callAlert({
+          status: true,
+          message: 'Error al eliminar usuario',
+          color: 'error'
+        });
+      }
     },
 
     closeDelete() {
@@ -466,12 +491,84 @@ export default {
       });
     },
 
+    validateForm() {
+      if (!this.editedItem.nombre?.trim()) {
+        this.callAlert({
+          status: true,
+          message: 'El nombre es requerido',
+          color: 'error'
+        });
+        return false;
+      }
+
+      if (!this.editedItem.apellidos?.trim()) {
+        this.callAlert({
+          status: true,
+          message: 'Los apellidos son requeridos',
+          color: 'error'
+        });
+        return false;
+      }
+
+      if (!this.editedItem.email?.trim()) {
+        this.callAlert({
+          status: true,
+          message: 'El correo es requerido',
+          color: 'error'
+        });
+        return false;
+      }
+
+      if (!/.+@.+\..+/.test(this.editedItem.email)) {
+        this.callAlert({
+          status: true,
+          message: 'El email debe ser válido',
+          color: 'error'
+        });
+        return false;
+      }
+
+      if (this.editedIndex === -1 && !this.editedItem.password) {
+        this.callAlert({
+          status: true,
+          message: 'La contraseña es obligatoria para nuevos usuarios',
+          color: 'error'
+        });
+        return false;
+      }
+
+      if (!this.editedItem.rolId) {
+        this.callAlert({
+          status: true,
+          message: 'Debe seleccionar un Rol',
+          color: 'error'
+        });
+        return false;
+      }
+
+      if (!this.editedItem.jcId) {
+        this.callAlert({
+          status: true,
+          message: 'Debe seleccionar un Joven Club',
+          color: 'error'
+        });
+        return false;
+      }
+
+      return true;
+    },
+
     async save() {
       try {
+        // Validar formulario
+        if (!this.validateForm()) {
+          return;
+        }
+
         if (this.dialogTras) {
-          // Handle transfer save logic
+          // Lógica para traslado
           await this.$axios.put(`api/usuarios/${this.editedItem.id}/transfer`, {
-            jcId: this.editedItem.jcId || this.jcx
+            jcId: this.editedItem.jcId
           });
           this.callAlert({
             status: true,
@@ -479,44 +576,18 @@ export default {
             color: 'success'
           });
         } else {
-          // Regular save logic remains the same
-          if (!this.editedItem.nombre || !this.editedItem.apellidos || !this.editedItem.email) {
-            this.callAlert({
-              status: true,
-              message: 'Los campos Nombre, Apellidos y Correo son obligatorios',
-              color: 'error'
-            });
-            return;
-          }
-
+          // Lógica para crear/editar usuario
           if (this.editedIndex === -1) {
-            if (!this.editedItem.password) {
-              this.callAlert({
-                status: true,
-                message: 'La contraseña es obligatoria para nuevos usuarios',
-                color: 'error'
-              });
-              return;
-            }
-
-            if (!this.editedItem.rolId || !this.editedItem.jcId) {
-              this.callAlert({
-                status: true,
-                message: 'Debe seleccionar un Rol y un Joven Club',
-                color: 'error'
-              });
-              return;
-            }
-
+            // Crear nuevo usuario
             const newUser = {
-              nombre: this.editedItem.nombre,
-              apellidos: this.editedItem.apellidos,
-              email: this.editedItem.email,
+              nombre: this.editedItem.nombre.trim(),
+              apellidos: this.editedItem.apellidos.trim(),
+              email: this.editedItem.email.trim(),
               password: this.editedItem.password,
               confirmPassword: this.editedItem.password,
-              grupo_municipal: this.editedItem.grupo_municipal || false,
+              grupo_municipal: Boolean(this.editedItem.grupo_municipal),
               rolId: parseInt(this.editedItem.rolId),
-              jcId: parseInt(this.editedItem.jcId || this.jcx),
+              jcId: parseInt(this.editedItem.jcId),
               activo: true
             };
 
@@ -528,36 +599,53 @@ export default {
               color: 'success'
             });
           } else {
+            // Actualizar usuario existente
             const updateData = {
-              nombre: this.editedItem.nombre,
-              apellidos: this.editedItem.apellidos,
-              email: this.editedItem.email,
-              grupo_municipal: this.editedItem.grupo_municipal,
+              nombre: this.editedItem.nombre.trim(),
+              apellidos: this.editedItem.apellidos.trim(),
+              email: this.editedItem.email.trim(),
+              grupo_municipal: Boolean(this.editedItem.grupo_municipal),
               rolId: parseInt(this.editedItem.rolId),
               jcId: parseInt(this.editedItem.jcId),
-              activo: this.editedItem.activo
+              activo: Boolean(this.editedItem.activo)
             };
 
-            if (this.editedItem.password) {
+            // Solo incluir password si se proporcionó uno nuevo y no está vacío
+            if (this.editedItem.password && this.editedItem.password.trim() !== '') {
               updateData.password = this.editedItem.password;
               updateData.confirmPassword = this.editedItem.password;
             }
 
-            console.log('Updating user:', updateData);
+            console.log('Updating user ID:', this.editedItem.id);
+            console.log('Updating user data:', updateData);
+            
             await this.$axios.put(
-              `api/usuarios/${this.items[this.editedIndex].id}`, 
+              `api/usuarios/${this.editedItem.id}`, 
               updateData
             );
+            this.callAlert({
+              status: true,
+              message: 'Usuario actualizado exitosamente',
+              color: 'success'
+            });
           }
         }
 
         await this.initialize();
         this.close();
       } catch (error) {
-        console.error('Error saving user:', error.response?.data);
+        console.error('Error saving user:', error.response?.data || error);
+        let errorMessage = 'Error al guardar el usuario';
+        
+        if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response?.data?.errors) {
+          errorMessage = Object.values(error.response.data.errors).flat().join(', ');
+        }
+        
         this.callAlert({
           status: true,
-          message: error.response?.data?.message || 'Error al guardar el usuario',
+          message: errorMessage,
           color: 'error'
         });
       }
