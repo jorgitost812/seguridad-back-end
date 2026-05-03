@@ -47,7 +47,8 @@ async create(createUsuarioDto: CreateUsuarioDto) {
 }
    async findByEmail(email: string): Promise<Usuario | null> {
     return this.usuariosRepo.findOne({
-      where: { email } as FindOptionsWhere<Usuario>
+      where: { email } as FindOptionsWhere<Usuario>,
+      relations: ['rol', 'jc']
     });
   }
 

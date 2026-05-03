@@ -13,18 +13,18 @@
         <v-dialog v-model="dialog" >
           <template v-slot:activator="{ on, attrs }">
             <v-btn 
-    small 
-    class="ml-2" 
-    color="primary" 
-    fab 
-    v-bind="attrs" 
-    v-on="on" 
-    :disabled="!canAddPC"
-  >
-    <v-icon>mdi-plus</v-icon>
-  </v-btn>
+              small 
+              class="ml-2" 
+              color="primary" 
+              fab 
+              v-bind="attrs" 
+              v-on="on" 
+              :disabled="!canAddPC"
+            >
+              <v-icon>mdi-plus</v-icon>
+            </v-btn>
                                   
-            <v-col  cols="12" sm="6" md="4" >
+            <v-col cols="12" sm="6" md="4" >
               <v-row>
                 <v-select class="dark" :class="['mt-5']" style="width: 45%;" v-if="user.rol.id < 3"
                   :items="municipios"
@@ -33,17 +33,16 @@
                   item-value="id"
                   v-model="municipio">
                 </v-select>
-                <v-select  class="dark" :class="['mt-5','ml-3']" style="width: 45%;" v-if="user.rol.id !== 4"
+                <v-select  class="dark" :class="['mt-5','ml-3']" style="width: 45%;" v-if="user.rol.id !== 4 && user.rol.id !== 5"
                   :items="jcs"
                   label="Jclub"
                   item-text="nombre"
                   item-value="id"
                   v-model="jcx">
                 </v-select>
-                
               </v-row>
-              </v-col>
-              <v-spacer></v-spacer>
+            </v-col>
+            <v-spacer></v-spacer>
           </template>
           <v-card>
             <v-card-title>
@@ -54,14 +53,13 @@
               <v-container>
                 <v-row>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.numero" label="N. Inventario">
-                    </v-text-field>
+                    <v-text-field v-model="editedItem.numero" label="N. Inventario" required></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.nombre" label="Nombre"></v-text-field>
+                    <v-text-field v-model="editedItem.nombre" label="Nombre" required></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.ip" label="IP"></v-text-field>
+                    <v-text-field v-model="editedItem.ip" label="IP" required></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field 
@@ -79,15 +77,14 @@
                       @click:append="showp = !showp"
                       label="Pass Admin"></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="6" md="4" v-if="(user.rol.id < 3)">
-                  <v-select 
-                    :items="jcs" 
-                    label="Joven Club" 
-                    item-text="nombre" 
-                    item-value="id" 
-                    v-model="editedItem.jc"></v-select>
+                  <v-col cols="12" sm="6" md="4" v-if="user.rol.id < 3">
+                    <v-select 
+                      :items="jcs" 
+                      label="Joven Club" 
+                      item-text="nombre" 
+                      item-value="id" 
+                      v-model="editedItem.jc"></v-select>
                   </v-col>
-                  
                 </v-row>
               </v-container>
             </v-card-text>
@@ -120,23 +117,22 @@
               <v-container>
                 <v-row>
                   <v-col cols="12" sm="6" md="4" v-if="user.rol.id < 3">
-                <v-select class="dark" :class="['mt-5','ml-16']" style="width: 100%;"
-                  :items="municipios"
-                  label="Municipio"
-                  item-text="nombre"
-                  item-value="id"
-                  v-model="municipio">
-                </v-select>
-              </v-col>
-                  <v-col cols="12" sm="6" md="4">
-                  <v-select class="dark" :class="['mt-5','ml-16']" style="width: 100%;"
-                    :items="jcs" 
-                    label="Joven Club" 
-                    item-text="nombre" 
-                    item-value="id" 
-                    v-model="editedItem.jc"></v-select>
+                    <v-select class="dark" :class="['mt-5','ml-16']" style="width: 100%;"
+                      :items="municipios"
+                      label="Municipio"
+                      item-text="nombre"
+                      item-value="id"
+                      v-model="municipio">
+                    </v-select>
                   </v-col>
-                  
+                  <v-col cols="12" sm="6" md="4">
+                    <v-select class="dark" :class="['mt-5','ml-16']" style="width: 100%;"
+                      :items="jcs" 
+                      label="Joven Club" 
+                      item-text="nombre" 
+                      item-value="id" 
+                      v-model="editedItem.jc"></v-select>
+                  </v-col>
                 </v-row>
               </v-container>
             </v-card-text>
@@ -152,14 +148,11 @@
     </template>
     <template v-slot:item.actions="{ item }">
       <v-icon small fab @click="irDetalles(item)"> mdi-eye </v-icon>
-      <v-icon v-if="user.rol.id < 4" small fab @click="editItem(item)" > mdi-pencil </v-icon>
-      <v-icon v-if="user.rol.id < 4" small fab @click="deleteItem(item)" > mdi-delete </v-icon>
-      <v-icon v-if="user.rol.id < 4" small fab @click="trasladoItem(item)" > mdi-camera-switch </v-icon>
-      
+      <!-- Permitir editar/eliminar/trasladar para Administrador (1), AdministradorJC (5) y Técnico (7) -->
+      <v-icon v-if="user.rol.id === 1 || user.rol.id === 5 || user.rol.id === 7" small fab @click="editItem(item)"> mdi-pencil </v-icon>
+      <v-icon v-if="user.rol.id === 1 || user.rol.id === 5 || user.rol.id === 7" small fab @click="deleteItem(item)"> mdi-delete </v-icon>
+      <v-icon v-if="user.rol.id === 1 || user.rol.id === 5" small fab @click="trasladoItem(item)"> mdi-camera-switch </v-icon>
     </template>
-
-    
-
   </v-data-table>
 </template>
 
@@ -204,9 +197,9 @@ export default {
 
   computed: {
     formTitle() {
-     return this.editedIndex === -1 ? 'Nuevo registro' : 'Editando registro'
+      return this.editedIndex === -1 ? 'Nuevo registro' : 'Editando registro'
     },
-     jcs() {
+    jcs() {
       return this.$store.state.jcs.list;
     },
     user() {
@@ -216,10 +209,10 @@ export default {
       return this.$store.state.municipios.list;
     },
     canAddPC() {
-      return this.user && this.user.rol && this.user.rol.id === 1;
+      // Permitir a Administrador (1), AdministradorJC (5) y Técnico (7)
+      return this.user && this.user.rol && (this.user.rol.id === 1 || this.user.rol.id === 5 || this.user.rol.id === 7);
     },
   },
-    
 
   watch: {
     dialog(val) {
@@ -231,82 +224,77 @@ export default {
     dialogTras(val) {
       val || this.close();
     },
-     jcx: {
-        handler: function(val) {
-          this.editedItem.jc = this.jcx;
-          this.initialize();
+    jcx: {
+      handler: function(val) {
+        this.editedItem.jc = this.jcx;
+        this.initialize();
       },
-        deep: true
-      },
+      deep: true
+    },
     municipio: {
-         handler: async function(val) { 
-           await this.actualizaJC(); 
-           await this.initialize();
-           if(this.jcs.length > 0){
-             this.jcx = this.jcs[0].id;
-           } else {
-             this.jcx = null;
-           }
-        
+      handler: async function(val) { 
+        await this.actualizaJC(); 
+        await this.initialize();
+        if(this.jcs.length > 0){
+          this.jcx = this.jcs[0].id;
+        } else {
+          this.jcx = null;
+        }
       },
-        deep: true
-      }
+      deep: true
+    }
   },
 
   async created() {
-  try {
-    if (!this.canAddPC) {
+    try {
+      if (!this.canAddPC) {
         console.warn('Usuario no tiene permisos para agregar PCs');
       }
-    this.$store.dispatch('roles/getRoles');
-    await this.$store.dispatch('provincias/getProvincias');
-    
-    // Verificación segura de propiedades anidadas
-    if (this.user?.jc?.municipio?.provincia?.id) {
-      this.provincia = this.user.jc.municipio.provincia.id;
-    } else {
-      // Valor por defecto o manejo de error
-      console.error("Provincia no definida en usuario:", this.user);
-      this.provincia = 1; // ID de provincia por defecto
-    }
+      this.$store.dispatch('roles/getRoles');
+      await this.$store.dispatch('provincias/getProvincias');
+      
+      if (this.user?.jc?.municipio?.provincia?.id) {
+        this.provincia = this.user.jc.municipio.provincia.id;
+      } else {
+        console.error("Provincia no definida en usuario:", this.user);
+        this.provincia = 1;
+      }
 
-    await this.$store.dispatch('municipios/getMunByProvincia', this.provincia);
-    
-    if (this.user?.jc?.municipio?.id) {
-      this.municipio = this.user.jc.municipio.id;
-    } else {
-      console.error("Municipio no definido en usuario:", this.user);
-      this.municipio = 1; // ID de municipio por defecto
+      await this.$store.dispatch('municipios/getMunByProvincia', this.provincia);
+      
+      if (this.user?.jc?.municipio?.id) {
+        this.municipio = this.user.jc.municipio.id;
+      } else {
+        console.error("Municipio no definido en usuario:", this.user);
+        this.municipio = 1;
+      }
+      
+      await this.$store.dispatch('jcs/getJcsByMunicipios', this.municipio);
+      
+      this.jcx = this.user?.jc?.id || this.jcs[0]?.id || null;
+      
+      await this.initialize();
+    } catch (error) {
+      console.error("Error en created:", error);
+      this.$store.commit('alert/setAlert', {
+        status: true,
+        message: 'Error cargando datos',
+        color: 'error'
+      });
     }
-    
-    await this.$store.dispatch('jcs/getJcsByMunicipios', this.municipio);
-    
-    // Asignación segura de jcx
-    this.jcx = this.user?.jc?.id || this.jcs[0]?.id || null;
-    
-    await this.initialize();
-  } catch (error) {
-    console.error("Error en created:", error);
-    this.$store.commit('alert/setAlert', {
-      status: true,
-      message: 'Error cargando datos',
-      color: 'error'
-    });
-  }
-},
+  },
 
   methods: {
     irDetalles(item){
       this.$router.push(`/pc/${item.id}`)
     },
     callAlert(objetoAlerta) {
-        return this.$store.commit('alert/setAlert', objetoAlerta)
-       
-      },
+      return this.$store.commit('alert/setAlert', objetoAlerta)
+    },
     async initialize() {
       try {
-        if((this.user.rol.id !== 1) && ( this.user.grupo_municipal !==true))
-           this.jcx=this.user.jc.id;
+        if((this.user.rol.id !== 1) && (this.user.grupo_municipal !== true))
+          this.jcx = this.user.jc.id;
         const {data} = await this.$axios.get(`api/pcs/by_joven_club/${this.jcx}`)
         this.items = data;
       } catch (error) {
@@ -314,47 +302,20 @@ export default {
       }
     },
     async actualizaJC() {
-  // Validar que municipio sea un número válido
-  if (!this.municipio || isNaN(this.municipio)) {
-    console.error('Municipio inválido:', this.municipio);
-    this.municipio = 1; // Valor por defecto
-  }
-  
-  await this.$store.dispatch('jcs/getJcsByMunicipio', this.municipio);
-},
-
-async initialize() {
-  try {
-    // Validar jcx antes de usarlo
-    if (!this.jcx || isNaN(this.jcx)) {
-      console.error('JC inválido:', this.jcx);
-      if (this.jcs.length > 0) {
-        this.jcx = this.jcs[0].id;
-      } else {
-        throw new Error('No hay JCs disponibles');
+      if (!this.municipio || isNaN(this.municipio)) {
+        console.error('Municipio inválido:', this.municipio);
+        this.municipio = 1;
       }
-    }
-
-    const { data } = await this.$axios.get(`api/pcs/by_joven_club/${this.jcx}`);
-    this.items = data;
-  } catch (error) {
-    console.error("Error loading PCs:", error);
-    this.$store.commit('alert/setAlert', {
-      status: true,
-      message: 'Error cargando computadoras',
-      color: 'error'
-    });
-  }
-},
-editItem(item) {
-  this.editedIndex = this.items.indexOf(item);
-  this.editedItem = Object.assign({}, item, {
-    // No mostrar las contraseñas encriptadas en el formulario
-    admin: '', // O podrías dejarlo como item.pwd si necesitas indicar que ya hay una contraseña
-    setup: ''
-  });
-  this.dialog = true;
-},
+      await this.$store.dispatch('jcs/getJcsByMunicipio', this.municipio);
+    },
+    editItem(item) {
+      this.editedIndex = this.items.indexOf(item);
+      this.editedItem = Object.assign({}, item, {
+        admin: '',
+        setup: ''
+      });
+      this.dialog = true;
+    },
     trasladoItem(item) {
       this.editedIndex = this.items.indexOf(item);
       this.editedItem = Object.assign({}, item);
@@ -368,136 +329,47 @@ editItem(item) {
       });
     },
     deleteItem(item) {
-  this.editedIndex = this.items.findIndex(pc => pc.id === item.id);
-  this.editedItem = Object.assign({}, item);
-  this.dialogDelete = true;
-},
-   
-
-async deleteItemConfirm() {
-  try {
-    // Validate PC exists before deletion
-    if (!this.items[this.editedIndex]?.id) {
-      throw new Error('PC ID no válido');
-    }
-
-    const pcId = this.items[this.editedIndex].id;
-    console.log('Intentando eliminar PC:', pcId);
-
-    const response = await this.$axios.delete(`api/pcs/${pcId}`, {
-      validateStatus: function (status) {
-        return status < 500; // Handle 4xx errors properly
-      }
-    });
-
-    if (response.status === 200) {
-      this.callAlert({
-        status: true,
-        message: 'Computadora eliminada correctamente',
-        color: 'success'
-      });
-      await this.initialize();
-    } else {
-      throw new Error(response.data.message || 'Error desconocido');
-    }
-
-  } catch (error) {
-    console.error('Error completo:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message
-    });
-
-    this.callAlert({
-      status: true,
-      message: `Error: ${error.response?.data?.message || error.message || 'Error al eliminar'}`,
-      color: 'error'
-    });
-  } finally {
-    this.closeDelete();
-  }
-},
-
-    close() {
-      this.dialog = false;this.dialogTras = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
+      this.editedIndex = this.items.findIndex(pc => pc.id === item.id);
+      this.editedItem = Object.assign({}, item);
+      this.dialogDelete = true;
     },
-
-    closeDelete() {
-  this.dialogDelete = false;
-  this.$nextTick(() => {
-    this.editedItem = Object.assign({}, this.defaultItem);
-    this.editedIndex = -1;
-  });
-},
-
-    async save() {
-  try {
-    if (!this.editedItem.nombre || !this.editedItem.numero || !this.editedItem.ip) {
-      this.callAlert({
-        status: true,
-        message: 'Los campos Nombre, N. Inventario e IP son requeridos',
-        color: 'warning'
-      });
-      return;
-    }
-
-    // Create payload with basic data
-    const payload = {
-      nombre: this.editedItem.nombre,
-      numero: this.editedItem.numero,
-      ip: this.editedItem.ip,
-      jc: this.user.rol.id === 4 ? this.user.jc.id : this.editedItem.jc
-    };
-
-    // Handle passwords - only update if changed
-    if (this.editedItem.admin && this.editedItem.admin !== this.items[this.editedIndex]?.pwd) {
-      payload.pwd = encrypt(this.editedItem.admin);
-    } else if (this.editedIndex === -1) {
-      // For new items, encrypt even if empty to avoid null
-      payload.pwd = encrypt(this.editedItem.admin || '');
-    }
-
-    if (this.editedItem.setup && this.editedItem.setup !== this.items[this.editedIndex]?.setupPwd) {
-      payload.setupPwd = encrypt(this.editedItem.setup);
-    } else if (this.editedIndex === -1) {
-      // For new items, encrypt even if empty to avoid null
-      payload.setupPwd = encrypt(this.editedItem.setup || '');
-    }
-
-    if (this.editedIndex > -1) {
-      // Update existing PC
-      await this.$axios.put(`api/pcs/${this.items[this.editedIndex].id}`, payload);
-      this.callAlert({
-        status: true,
-        message: 'Se modificó correctamente',
-        color: 'success'
-      });
-    } else {
-      // Create new PC
-      await this.$axios.post("api/pcs", payload);
-      this.callAlert({
-        status: true,
-        message: 'Se agregó correctamente',
-        color: 'success'
-      });
-    }
-
-    await this.initialize();
-    this.close();
-  } catch (error) {
-    console.error('Error saving PC:', error);
-    this.callAlert({
-      status: true,
-      message: error.response?.data?.message || 'Error al guardar la computadora',
-      color: 'error'
-    });
-  }
-}
-,
+    async deleteItemConfirm() {
+      try {
+        if (!this.items[this.editedIndex]?.id) {
+          throw new Error('PC ID no válido');
+        }
+        const pcId = this.items[this.editedIndex].id;
+        console.log('Intentando eliminar PC:', pcId);
+        const response = await this.$axios.delete(`api/pcs/${pcId}`, {
+          validateStatus: function (status) {
+            return status < 500;
+          }
+        });
+        if (response.status === 200) {
+          this.callAlert({
+            status: true,
+            message: 'Computadora eliminada correctamente',
+            color: 'success'
+          });
+          await this.initialize();
+        } else {
+          throw new Error(response.data.message || 'Error desconocido');
+        }
+      } catch (error) {
+        console.error('Error completo:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message
+        });
+        this.callAlert({
+          status: true,
+          message: `Error: ${error.response?.data?.message || error.message || 'Error al eliminar'}`,
+          color: 'error'
+        });
+      } finally {
+        this.closeDelete();
+      }
+    },
     close() {
       this.dialog = false;
       this.dialogTras = false;
@@ -506,7 +378,70 @@ async deleteItemConfirm() {
         this.editedIndex = -1;
       });
     },
+    closeDelete() {
+      this.dialogDelete = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
+    async save() {
+      try {
+        if (!this.editedItem.nombre || !this.editedItem.numero || !this.editedItem.ip) {
+          this.callAlert({
+            status: true,
+            message: 'Los campos Nombre, N. Inventario e IP son requeridos',
+            color: 'warning'
+          });
+          return;
+        }
+
+        const payload = {
+          nombre: this.editedItem.nombre,
+          numero: this.editedItem.numero,
+          ip: this.editedItem.ip,
+          jc: this.user.rol.id === 7 ? this.user.jc.id : (this.editedItem.jc || this.user.jc.id)
+        };
+
+        if (this.editedItem.admin && this.editedItem.admin !== this.items[this.editedIndex]?.pwd) {
+          payload.pwd = encrypt(this.editedItem.admin);
+        } else if (this.editedIndex === -1) {
+          payload.pwd = encrypt(this.editedItem.admin || '');
+        }
+
+        if (this.editedItem.setup && this.editedItem.setup !== this.items[this.editedIndex]?.setupPwd) {
+          payload.setupPwd = encrypt(this.editedItem.setup);
+        } else if (this.editedIndex === -1) {
+          payload.setupPwd = encrypt(this.editedItem.setup || '');
+        }
+
+        if (this.editedIndex > -1) {
+          await this.$axios.put(`api/pcs/${this.items[this.editedIndex].id}`, payload);
+          this.callAlert({
+            status: true,
+            message: 'Se modificó correctamente',
+            color: 'success'
+          });
+        } else {
+          await this.$axios.post("api/pcs", payload);
+          this.callAlert({
+            status: true,
+            message: 'Se agregó correctamente',
+            color: 'success'
+          });
+        }
+
+        await this.initialize();
+        this.close();
+      } catch (error) {
+        console.error('Error saving PC:', error);
+        this.callAlert({
+          status: true,
+          message: error.response?.data?.message || 'Error al guardar la computadora',
+          color: 'error'
+        });
+      }
+    },
   },
 };
-
 </script>

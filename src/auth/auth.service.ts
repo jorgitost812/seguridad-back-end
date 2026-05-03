@@ -41,7 +41,8 @@ export class AuthService {
             const payload = { 
                 email: user.email, 
                 sub: user.id,
-                rol: user.rol?.nombre 
+                rol: user.rol?.nombre,
+                jcId: user.jc?.id
             };
 
             // Modificado para incluir más información del usuario
