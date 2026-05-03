@@ -58,25 +58,25 @@ export class PcController {
     }
     
     @Delete(':id')
-    @UseGuards(JwtAuthGuard, JcGuard, RolesGuard)
-    @Roles('AdministradorJC')
-    async delete(@Param('id', ParseIntPipe) id: number, @Req() req) {
-      console.log('=== Eliminando PC ===');
-      console.log('ID:', id);
-      console.log('Usuario:', req.user);
-      try {
-        const result = await this.pcService.delete(id, req.user.jcId);
-        return {
-          success: true,
-          message: 'PC eliminada correctamente'
-        };
-      } catch (error) {
-        throw new BadRequestException({
-          success: false,
-          message: error.message
-        });
-      }
-    }
+@UseGuards(JwtAuthGuard, JcGuard, RolesGuard)
+@Roles('AdministradorJC', 'Técnico')
+async delete(@Param('id', ParseIntPipe) id: number, @Req() req) {
+  console.log('=== Eliminando PC ===');
+  console.log('ID:', id);
+  console.log('Usuario:', req.user);
+  try {
+    const result = await this.pcService.delete(id, req.user.jcId);
+    return {
+      success: true,
+      message: 'PC eliminada correctamente'
+    };
+  } catch (error) {
+    throw new BadRequestException({
+      success: false,
+      message: error.message
+    });
+  }
+}
 
     @Get('by_joven_club/:idJc')
     @UseGuards(JwtAuthGuard)

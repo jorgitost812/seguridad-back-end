@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {encrypt} from '../../helpers/crypto.helper'
-
+import { encrypt } from '../../helpers/crypto.helper'
 import { Computadora } from '../entities/pc.entity';
-
 
 @Injectable()
 export class PcService {
@@ -32,8 +30,13 @@ export class PcService {
          pwd: {},
          setupPwd: {}
       }
-      newPC.pwd = encrypt(body.admin)
-      newPC.setupPwd = encrypt(body.setup)
+      
+      if (body.admin && body.admin !== '') {
+         newPC.pwd = encrypt(body.admin);
+      }
+      if (body.setup && body.setup !== '') {
+         newPC.setupPwd = encrypt(body.setup);
+      }
        
       const nuevaTarea = this.pcsRepo.create(newPC);
       return this.pcsRepo.save(nuevaTarea);
@@ -51,6 +54,15 @@ export class PcService {
 
      if (jcId && pc.jc?.id !== jcId) {
        throw new Error('No tienes permiso para editar esta PC');
+     }
+
+     if (body.admin && body.admin !== '') {
+       body.pwd = encrypt(body.admin);
+       delete body.admin;
+     }
+     if (body.setup && body.setup !== '') {
+       body.setupPwd = encrypt(body.setup);
+       delete body.setup;
      }
 
      this.pcsRepo.merge(pc, body);
@@ -92,11 +104,10 @@ export class PcService {
      });
    }
 
-  findByNombreJovenClub(nombre: string): Promise<Computadora[]> {
-   return this.pcsRepo.createQueryBuilder("computadora")
-   .innerJoinAndSelect("computadora.jc", "jovenClub")
-   .where("jovenClub.nombre = :nombre", { nombre: nombre })
-   .getMany();
- }
-
+   findByNombreJovenClub(nombre: string): Promise<Computadora[]> {
+     return this.pcsRepo.createQueryBuilder("computadora")
+       .innerJoinAndSelect("computadora.jc", "jovenClub")
+       .where("jovenClub.nombre = :nombre", { nombre: nombre })
+       .getMany();
+   }
 }
