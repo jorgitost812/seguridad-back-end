@@ -5,12 +5,13 @@ import { UsuariosController } from './controllers/usuarios.controller';
 import { Usuario } from './entities/usuario.entity';
 import { JwtStrategy } from "../auth/jwt.strategy";
 import { MailModule } from './../mail/mail.module';
-//import { createFirstUser } from "../helpers/primer.usuario";
+import { TrazasModule } from '../trazas/trazas.module';
 
 @Module({
-  imports:[
+  imports: [
     MailModule,
-    TypeOrmModule.forFeature([Usuario])
+    TypeOrmModule.forFeature([Usuario]),
+    TrazasModule  // ← IMPORTANTE: Agregar TrazasModule
   ],
   providers: [UsuariosService, JwtStrategy],
   controllers: [UsuariosController],

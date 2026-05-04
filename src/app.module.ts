@@ -13,7 +13,7 @@ import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
 import { PDFModule } from './pdf/pdf.module';
 import { ReportesModule } from './accesos/accesos.module';
-
+import { TrazasModule } from './trazas/trazas.module';
 
 @Module({
   imports: [
@@ -31,7 +31,7 @@ import { ReportesModule } from './accesos/accesos.module';
       retryAttempts: 10
     }),
     ProvinciasModule, MunicipiosModule, JovenclubModule, PcModule,cAccesosModule,iniSesionModule,  
-    RolesModule,funcionesRolesModule, UsuariosModule, AuthModule, PDFModule,ReportesModule
+    RolesModule,funcionesRolesModule, UsuariosModule, AuthModule, PDFModule,ReportesModule,TrazasModule,
   ],
   controllers: [AppController],
   providers: [],

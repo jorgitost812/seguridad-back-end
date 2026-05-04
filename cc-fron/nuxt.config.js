@@ -1,15 +1,16 @@
-
-import colors from 'vuetify/es5/util/colors'
-import es from 'vuetify/src/locale/es.ts'
-
 export default {
-  // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
-  ssr: false,
+  // Target: https://go.nuxtjs.dev/config-target
+  target: 'static',
 
-  // Global page headers: https://go.nuxtjs.dev/config-head
+  // Server configuration
+  server: {
+    port: 8080,
+    host: 'localhost'
+  },
+
+  // Global page headers
   head: {
-    titleTemplate: '%s - GILT',
-    title: 'Seguridad PC',
+    title: 'cc-fron',
     htmlAttrs: {
       lang: 'en'
     },
@@ -22,130 +23,83 @@ export default {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ]
   },
-  server: {
-    port: 8080,
-	host: 'localhost'
-  },
-  // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [
-    '@mdi/font/css/materialdesignicons.css'
-  ],
 
-  // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
+  // Global CSS
+  css: [],
+
+  // Plugins
   plugins: [
+    '~/plugins/axios.js'
   ],
 
-  // Auto import components: https://go.nuxtjs.dev/config-components
+  // Auto import components
   components: true,
 
-  // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
+  // Modules
   buildModules: [
-    // https://go.nuxtjs.dev/vuetify
-    '@nuxtjs/vuetify',
+    '@nuxtjs/vuetify'
   ],
 
-  // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     '@nuxtjs/auth-next'
   ],
 
-  // Axios module configuration: https://go.nuxtjs.dev/config-axios
+  // Axios configuration
   axios: {
     baseURL: 'http://localhost:3000',
-    headers: {
-      common: {
-        'Accept': 'application/json'
-      }
-    }
+    credentials: false
   },
 
- // ...existing code...
- auth: {
-  strategies: {
-    local: {
-      scheme: 'local',
-      token: {
-        property: 'access_token',
-        required: true,
-        type: 'Bearer'
-      },
-      user: {
-        property: 'user'
-      },
-      endpoints: {
-        login: { 
-          url: '/api/auth/login', 
-          method: 'post'
+  // Auth configuration
+  auth: {
+    strategies: {
+      local: {
+        token: {
+          property: 'access_token',
+          global: true,
+          required: true,
+          type: 'Bearer'
         },
-        logout: false,
-        user: false
+        user: {
+          property: 'user',
+          autoFetch: true
+        },
+        endpoints: {
+          login: { url: '/api/auth/login', method: 'post' },
+          logout: { url: '/api/auth/logout', method: 'post' },
+          user: { url: '/api/auth/profile', method: 'get' }
+        }
       }
-    }
-  },
-  redirect: {
-    login: '/login',
-    logout: '/login',
-    home: '/'  // Cambia esto a la ruta donde quieres redirigir después del login
-  },
-  watchLoggedIn: true,
-    fullPathRedirect: true
-}
-,// ...existing code...
-
-  router: {
-    middleware: ['auth']
-  },
-
-
-  // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
-  vuetify: {
-    customVariables: ['~/assets/variables.scss'],
-    defaultAccess: false,
-    lang: {
-      locales: { es },
-      current: 'es',
     },
+    redirect: {
+      login: '/login',
+      logout: '/',
+      callback: '/login',
+      home: '/'
+    },
+    // IMPORTANTE: Deshabilitar el store automático para evitar duplicación
+    store: false,
+    useLocalStorage: true
+  },
+
+  // Vuetify configuration
+  vuetify: {
     theme: {
-      dark: false,
       themes: {
-        dark: {
-          primary: colors.blue.darken2,
-          accent: colors.grey.darken3,
-          secondary: colors.amber.darken3,
-          info: colors.teal.lighten1,
-          warning: colors.amber.base,
-          error: colors.deepOrange.accent4,
-          success: colors.green.accent3,
-          backgroundcolor: colors.yellow.darken2,
-          menucolor: colors.blue.accent1,
-          fondoeditor: colors.yellow.lighten4
-        },
-        ligth: {
+        light: {
           primary: '#1976D2',
+          accent: '#FFC107',
           secondary: '#424242',
-          accent: '#82B1FF',
-          error: '#FF5252',
           info: '#2196F3',
-          success: '#4CAF50',
           warning: '#FFC107',
-          backgroundcolor: '#fdd835',
-          menucolor: '#ff9900',
-          fondoeditor: '#FFF9C4' 
+          error: '#FF5252',
+          success: '#4CAF50'
         }
       }
     }
   },
 
-  // Build Configuration: https://go.nuxtjs.dev/config-build
-  build:{
-	//babel:{
-		//plugins:[
-			//["@babel/plugin-proposal-class-properties", { "loose": true }],
-			//["@babel/plugin-proposal-private-methods", { "loose": true }],
-			//["@babel/plugin-proposal-private-property-in-object", { "loose": true }]
-				//]
-			//}
-		}
+  // Build configuration
+  build: {}
 }

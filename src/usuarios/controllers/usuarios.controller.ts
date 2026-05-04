@@ -8,13 +8,17 @@ import { JwtAuthGuard } from "../../auth/jwt-auth.guard";
 import { RolesGuard } from '../../auth/roles.guard';
 import { Roles } from '../../auth/roles.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { TrazasService } from '../../trazas/trazas.service';
 
 @Controller('api/usuarios')
 @ApiBearerAuth()
 @ApiTags('usuarios')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsuariosController {
-    constructor(private usuarioService: UsuariosService) {}
+    constructor(
+        private usuarioService: UsuariosService,
+        private trazasService: TrazasService
+    ) {}
     
     @Get()
     @Roles('Administrador', 'AdministradorProv', 'AdministradorJC')
@@ -30,30 +34,28 @@ export class UsuariosController {
 
     @Post()
     @Roles('Administrador', 'AdministradorProv', 'AdministradorJC')
-    create(@Body(SETTINGS.VALIDATION_PIPE) createUsuarioDto: CreateUsuarioDto, @Req() req){
-        // Si es AdministradorJC, forzar su propio jcId
+    async create(@Body(SETTINGS.VALIDATION_PIPE) createUsuarioDto: CreateUsuarioDto, @Req() req){
         const userRole = req.user.rol?.nombre || req.user.rol;
         if (userRole === 'AdministradorJC') {
             createUsuarioDto.jcId = req.user.jcId;
         }
-        return this.usuarioService.create(createUsuarioDto); 
+        return this.usuarioService.create(createUsuarioDto, req.user, this.trazasService);
     }
     
     @Put(':id')
     @Roles('Administrador', 'AdministradorProv', 'AdministradorJC')
-    update(@Param('id') id: number, @Body() updateUsuarioDto: UpdateUsuarioDto, @Req() req){
+    async update(@Param('id') id: number, @Body() updateUsuarioDto: UpdateUsuarioDto, @Req() req){
         const userRole = req.user.rol?.nombre || req.user.rol;
         if (userRole === 'AdministradorJC') {
-            // Forzar que solo pueda asignar usuarios a su propio JC
             updateUsuarioDto.jcId = req.user.jcId;
         }
-        return this.usuarioService.update(id, updateUsuarioDto);
+        return this.usuarioService.update(id, updateUsuarioDto, req.user, this.trazasService);
     }
 
     @Delete(':id')
     @Roles('Administrador', 'AdministradorProv', 'AdministradorJC')
-    delete(@Param('id') id: number, @Req() req){
-        return this.usuarioService.delete(id);
+    async delete(@Param('id') id: number, @Req() req){
+        return this.usuarioService.delete(id, req.user, this.trazasService);
     }
 
     @Get('by_joven_club/:id_joven_club')
@@ -62,7 +64,6 @@ export class UsuariosController {
         let jcId = parseInt(idJovenClub);
         const userRole = req.user.rol?.nombre || req.user.rol;
         
-        // Si es AdministradorJC, solo puede ver su propio JC
         if (userRole === 'AdministradorJC') {
             jcId = req.user.jcId;
         }
@@ -71,10 +72,7 @@ export class UsuariosController {
             throw new BadRequestException('ID de Joven Club inválido');
         }
         
-        console.log('Fetching users for JC:', jcId);
-        const users = await this.usuarioService.findByIdJovenClub(jcId);
-        console.log('Found users:', users.length);
-        return users;
+        return await this.usuarioService.findByIdJovenClub(jcId);
     }
     
     @Get('by_rol/:id_rol')
@@ -102,16 +100,11 @@ export class UsuariosController {
       let jcId = idJovenClub;
       const userRole = req.user.rol?.nombre || req.user.rol;
       
-      // Si es AdministradorJC, solo puede ver su propio JC
       if (userRole === 'AdministradorJC') {
         jcId = req.user.jcId;
       }
       
-      try {
-        return await this.usuarioService.findByIdJovenClubAndNombreRol(jcId);
-      } catch (error) {
-        throw new BadRequestException(`Error fetching users: ${error.message}`);
-      }
+      return await this.usuarioService.findByIdJovenClubAndNombreRol(jcId);
     }
 
     @Get('generate/password/:length')

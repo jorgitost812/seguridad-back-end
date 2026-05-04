@@ -1,16 +1,14 @@
 <template>
   <v-app dark>
-    <v-navigation-drawer  color="#FFF9C4" v-model="drawer" clipped fixed app>
+    <v-navigation-drawer v-if="user" color="#FFF9C4" v-model="drawer" clipped fixed app>
       <v-list-item class="px-2">
-         <v-list-item-avatar>
+        <v-list-item-avatar>
           <img :src="imagen.url" :alt="user.nombre" width="200">
         </v-list-item-avatar> 
-         <v-list-item-title>{{user.nombre+" "+user.apellidos }}</v-list-item-title> 
-           <!-- <v-btn icon @click.stop="mini = !mini">
-            <v-icon>mdi-chevron-left</v-icon>
-          </v-btn>  -->
-        </v-list-item>
+        <v-list-item-title>{{ user.nombre }} {{ user.apellidos }}</v-list-item-title> 
+      </v-list-item>
       <v-divider></v-divider>
+      
       <v-list>
         <v-list-item
           v-for="(item, i) in items"
@@ -20,8 +18,7 @@
           router
           exact
         >
-       
-        <v-list-item-action>
+          <v-list-item-action>
             <v-icon>{{ item.icon }}</v-icon>
           </v-list-item-action>
           <v-list-item-content>
@@ -30,11 +27,11 @@
         </v-list-item>
       </v-list>
 
-
-    <v-list>
+      <!-- Reportes -->
+      <v-list>
         <v-list-group :value="false" no-action>
           <template v-slot:activator>
-          <v-list-item-action>
+            <v-list-item-action>
               <v-icon>mdi-home-city</v-icon>
             </v-list-item-action>            
             <v-list-item-content>
@@ -54,9 +51,11 @@
             <v-list-item-title v-text="title"></v-list-item-title>
           </v-list-item>
         </v-list-group>
+        
+        <!-- Configuración -->
         <v-list-group :value="false" no-action>
           <template v-slot:activator>
-          <v-list-item-action>
+            <v-list-item-action>
               <v-icon>mdi-cog-outline</v-icon>
             </v-list-item-action>            
             <v-list-item-content>
@@ -76,158 +75,80 @@
             <v-list-item-title v-text="title"></v-list-item-title>
           </v-list-item>
         </v-list-group>
-    </v-list>
-
+      </v-list>
     </v-navigation-drawer>
     
     <v-app-bar color="primary" dark clipped-left fixed app>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
+      <v-app-bar-nav-icon v-if="user" @click.stop="drawer = !drawer" />
       <v-toolbar-title v-text="title" />
-      <!-- <v-divider></v-divider> -->
-      <v-list-item-title align="right">{{user.email }} ( {{user.rol.nombre}})</v-list-item-title>
-      <v-btn small class="ml-2" icon @click="Salir"><v-icon>mdi-logout</v-icon></v-btn>
-     
-      <v-spacer></v-spacer>  
-          
-      
+      <v-list-item-title align="right">
+        {{ user ? user.nombre + ' ' + user.apellidos + ' (' + (user.rol ? user.rol.nombre : '') + ')' : 'Cargando...' }}
+      </v-list-item-title>
+      <v-btn small class="ml-2" icon @click="Salir">
+        <v-icon>mdi-logout</v-icon>
+      </v-btn>
     </v-app-bar>
+    
     <v-main style="background-color: #FFF9C4">
       <MiAlerta/>
-      <v-container >
+      <v-container>
         <nuxt />
       </v-container>
     </v-main>
+    
     <v-footer color="primary" dark :absolute="!fixed" app>
       <v-spacer></v-spacer>
-      <span>&copy; Grupo Informatico Las Tunas @ Año: {{ new Date().getFullYear() }} </span>
+      <span>&copy; Grupo Informatico Las Tunas @ Año: {{ new Date().getFullYear() }}</span>
       <v-spacer></v-spacer>
     </v-footer>
-    
   </v-app>
-   
 </template>
 
 <script>
 import MiAlerta from '../components/Mialerta.vue'
-import ref from 'vue'
-//  #90CAF9
 
 export default {
-  components: {MiAlerta},
-  usuarioReal: "",
+  components: { MiAlerta },
   data() {
     return {
-      accesos: [],
-      clipped: false,
-      activo: 0,
-      imagen: {
-        url: require('@/static/fotousuarios/logojc.jpg'),
-        nombre: "x",
-        
-      },
-      
       drawer: true,
       fixed: true,
-      backgroundDiv: {
-        backgroundImage : 'url(' + require('../assets/fondopc.jpg') + ')',
-        //background:'-moz-linear-gradient(top, #0f9fe7 0%, #3e4dda 100%);',
-        backgroundRepeat : 'no-repeat',
-        backgroundSize : '100% 100%'
-      },
+      imagen: { url: require('@/static/fotousuarios/logojc.jpg') },
+      title: "Control contraseñas de las PC",
       reportes: [
-        ['Accesos a PC', 'mdi-map', '/reportepc', ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI"]],
-        //['Inicios de sesiones', 'mdi-map', '/reporteini', ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI"]],
+        ['Accesos a PC', 'mdi-map', '/admin/reportepc', ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI"]],
       ],
       configura: [
-        ['Municipios', 'mdi-map', '/municipios', ["Administrador", "AdministradorProv"]],
-        //['Roles y Funciones', 'mdi-map', '/roles', ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI","Técnico"]],
-        ['Cambio contraseña', 'mdi-file-outline', '/contrasena', ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI","Técnico"]],
-        ['Salir', 'mdi-logout', '/login', ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI","Técnico"]],
+        ['Municipios', 'mdi-map', '/admin/municipios', ["Administrador", "AdministradorProv"]],
+        ['Trazas', 'mdi-history', '/admin/trazas', ["Administrador", "AdministradorProv"]],
+        ['Cambio contraseña', 'mdi-file-outline', '/contrasena', ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI", "Técnico"]],
+        ['Salir', 'mdi-logout', '/login', ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI", "Técnico"]],
       ],  
       items: [
-        {
-          icon: "mdi-home",
-          title: "Inicio",
-          to: "/",
-          role: ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI","Técnico"],
-        },
-        {
-          icon: "mdi-office-building",
-          title: "Joven Clubs",
-          to: "/jc",
-          role: ["Administrador", "AdministradorProv", "DirectorMunicipal"],
-        },
-        {
-          icon: "mdi-laptop",
-          title: "Computadoras",
-          to: "/pc",
-          role: ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI","Técnico"],
-        },
-        {
-          icon: "mdi-account-multiple-outline",
-          title: "Instructores",
-          to: "/user",
-          role: ["Administrador", "AdministradorProv", "DirectorMunicipal"],
-         }
-        //,{
-        //   icon: "mdi-home-city",
-        //   title: "Reportes",
-        //   to: "/",
-        //   role: ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI","Técnico"],
-        // }
-      ],
-      miniVariant: false,
-      right: true,
-      rightDrawer: false,
-      title: "Control contraseñas de las PC",
-    };
+        { icon: "mdi-home", title: "Inicio", to: "/admin", role: ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI", "Técnico"] },
+        { icon: "mdi-office-building", title: "Joven Clubs", to: "/admin/jc", role: ["Administrador", "AdministradorProv", "DirectorMunicipal"] },
+        { icon: "mdi-laptop", title: "Computadoras", to: "/admin/pc", role: ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI", "Técnico"] },
+        { icon: "mdi-account-multiple-outline", title: "Instructores", to: "/admin/user", role: ["Administrador", "AdministradorProv", "DirectorMunicipal"] }
+      ]
+    }
   },
   computed: {
     user() {
-      return this.$store.state.auth.user;
-    },
-     roles() {
-      return this.$store.state.roles.list;
+      return this.$store.state.auth.user
     },
     jcs() {
-      return this.$store.state.jcs.list;
-    },
-    userRol() {
-      const storageUser = localStorage.getItem('usuario')
-      const user = JSON.parse(storageUser)
-      //alert(user.rol.nombre.trim());
-      return user.rol.nombre.trim();
+      return this.$store.state.jcs.list
     }
-   
-  },
-   
-  async created() {
-    const response = await this.$axios.get('http://localhost:8080/reportepc');
-    this.accesos = response.data;
   },
   methods: {
-    initialize() {
-      this.usuarioReal =  this.user.email;
-      var cuenta=0;
-      for (var i = 0; i < this.usuarioReal.length; i++) {
-        if(this.usuarioReal[i] === "@"){
-          this.usuarioReal =  this.user.email.substr(0, cuenta); 
-          }
-         ++cuenta;
-      }
-      this.imagen.url= require(`@/static/fotousuarios/${this.usuarioReal}.jpg`);   
-      
-    },
     async Salir() {
-      await this.$auth.logout();
-      this.$router.push("/login");
+      await this.$auth.logout()
+      this.$router.push("/login")
     },
-    isAllow(roleList) { 
-      
-       return !!roleList.includes(this.user.rol.nombre.trim())
-    },
-    
-  },
-  
-};
+    isAllow(roleList) {
+      if (!this.user || !this.user.rol || !this.user.rol.nombre) return false
+      return roleList.includes(this.user.rol.nombre.trim())
+    }
+  }
+}
 </script>
