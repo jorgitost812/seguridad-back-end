@@ -16,7 +16,7 @@ export class JcGuard implements CanActivate {
       throw new ForbiddenException('No tienes un JC asignado');
     }
 
-    request.userJcId = userJcId;
+    request.jcId = userJcId;  // ← Esto es lo que usan los controladores
     return true;
   }
 }

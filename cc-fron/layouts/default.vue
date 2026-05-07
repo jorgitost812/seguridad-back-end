@@ -1,153 +1,74 @@
 <template>
   <v-app dark>
     <v-navigation-drawer v-if="user" color="#FFF9C4" v-model="drawer" clipped fixed app>
-      <v-list-item class="px-2">
+      <v-list-item class="px-2 mt-4">
         <v-list-item-avatar>
-          <img :src="imagen.url" :alt="user.nombre" width="200">
-        </v-list-item-avatar> 
-        <v-list-item-title>{{ user.nombre }} {{ user.apellidos }}</v-list-item-title> 
+          <img src="/logojc.jpg" alt="JC" width="200">
+        </v-list-item-avatar>
+        <v-list-item-title style="color: #0D47A1;">{{ user?.nombre }} {{ user?.apellidos }}</v-list-item-title>
+        <v-list-item-subtitle style="color: #0D47A1;">{{ user?.rol?.nombre || 'Usuario' }}</v-list-item-subtitle>
       </v-list-item>
       <v-divider></v-divider>
-      
-      <v-list>
-        <v-list-item
-          v-for="(item, i) in items"
-          :key="i"
-          :to="item.to"
-          v-show="isAllow(item.role)"
-          router
-          exact
-        >
-          <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title v-text="item.title" />
-          </v-list-item-content>
+
+      <v-list dense class="mt-4">
+        <v-list-item to="/dashboard" router exact>
+          <v-list-item-action><v-icon color="#0D47A1">mdi-view-dashboard</v-icon></v-list-item-action>
+          <v-list-item-content><v-list-item-title style="color: #0D47A1;">Dashboard</v-list-item-title></v-list-item-content>
+        </v-list-item>
+        <v-list-item to="/computadoras" router exact>
+          <v-list-item-action><v-icon color="#0D47A1">mdi-laptop</v-icon></v-list-item-action>
+          <v-list-item-content><v-list-item-title style="color: #0D47A1;">Computadoras</v-list-item-title></v-list-item-content>
+        </v-list-item>
+        <v-list-item to="/inventario" router exact>
+          <v-list-item-action><v-icon color="#0D47A1">mdi-package-variant</v-icon></v-list-item-action>
+          <v-list-item-content><v-list-item-title style="color: #0D47A1;">Inventario General</v-list-item-title></v-list-item-content>
+        </v-list-item>
+        <v-list-item to="/trazas" router exact>
+          <v-list-item-action><v-icon color="#0D47A1">mdi-history</v-icon></v-list-item-action>
+          <v-list-item-content><v-list-item-title style="color: #0D47A1;">Trazas</v-list-item-title></v-list-item-content>
         </v-list-item>
       </v-list>
-
-      <!-- Reportes -->
-      <v-list>
-        <v-list-group :value="false" no-action>
-          <template v-slot:activator>
-            <v-list-item-action>
-              <v-icon>mdi-home-city</v-icon>
-            </v-list-item-action>            
-            <v-list-item-content>
-              <v-list-item-title>Reportes</v-list-item-title>
-            </v-list-item-content>
-          </template>
-
-          <v-list-item
-            v-for="([title, icon, ruta, role], i) in reportes"
-            :key="i"
-            :to="ruta"
-            :role="role"
-            v-show="isAllow(role)"
-            link
-          >
-            <v-list-item-icon><v-icon v-text="icon"></v-icon></v-list-item-icon>
-            <v-list-item-title v-text="title"></v-list-item-title>
-          </v-list-item>
-        </v-list-group>
-        
-        <!-- Configuración -->
-        <v-list-group :value="false" no-action>
-          <template v-slot:activator>
-            <v-list-item-action>
-              <v-icon>mdi-cog-outline</v-icon>
-            </v-list-item-action>            
-            <v-list-item-content>
-              <v-list-item-title>Configuración</v-list-item-title>
-            </v-list-item-content>
-          </template>
-
-          <v-list-item
-            v-for="([title, icon, ruta, role], i) in configura"
-            :key="i"
-            :to="ruta"
-            :role="role"
-            v-show="isAllow(role)"
-            link
-          >
-            <v-list-item-icon><v-icon v-text="icon"></v-icon></v-list-item-icon>
-            <v-list-item-title v-text="title"></v-list-item-title>
-          </v-list-item>
-        </v-list-group>
-      </v-list>
     </v-navigation-drawer>
-    
-    <v-app-bar color="primary" dark clipped-left fixed app>
+
+    <v-app-bar color="#0D47A1" dark clipped-left fixed app>
       <v-app-bar-nav-icon v-if="user" @click.stop="drawer = !drawer" />
-      <v-toolbar-title v-text="title" />
-      <v-list-item-title align="right">
-        {{ user ? user.nombre + ' ' + user.apellidos + ' (' + (user.rol ? user.rol.nombre : '') + ')' : 'Cargando...' }}
-      </v-list-item-title>
-      <v-btn small class="ml-2" icon @click="Salir">
-        <v-icon>mdi-logout</v-icon>
-      </v-btn>
-    </v-app-bar>
-    
-    <v-main style="background-color: #FFF9C4">
-      <MiAlerta/>
-      <v-container>
-        <nuxt />
-      </v-container>
-    </v-main>
-    
-    <v-footer color="primary" dark :absolute="!fixed" app>
+      <v-toolbar-title>Sistema de Gestión de Inventarios - JC Las Tunas</v-toolbar-title>
       <v-spacer></v-spacer>
-      <span>&copy; Grupo Informatico Las Tunas @ Año: {{ new Date().getFullYear() }}</span>
+      <span style="color: #FFC107;" v-if="user">{{ user?.nombre }} ({{ user?.rol?.nombre }})</span>
+      <v-btn small class="ml-2" icon @click="Salir" color="#FFC107"><v-icon>mdi-logout</v-icon></v-btn>
+    </v-app-bar>
+
+    <v-main style="background-color: #FFF9C4">
+      <v-container fluid><nuxt /></v-container>
+    </v-main>
+
+    <v-footer color="#0D47A1" dark app>
+      <v-spacer></v-spacer>
+      <span style="color: #FFC107;">&copy; Grupo Informático Las Tunas - Joven Club - {{ new Date().getFullYear() }}</span>
       <v-spacer></v-spacer>
     </v-footer>
   </v-app>
 </template>
 
 <script>
-import MiAlerta from '../components/Mialerta.vue'
-
 export default {
-  components: { MiAlerta },
   data() {
-    return {
-      drawer: true,
-      fixed: true,
-      imagen: { url: require('@/static/fotousuarios/logojc.jpg') },
-      title: "Control contraseñas de las PC",
-      reportes: [
-        ['Accesos a PC', 'mdi-map', '/admin/reportepc', ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI"]],
-      ],
-      configura: [
-        ['Municipios', 'mdi-map', '/admin/municipios', ["Administrador", "AdministradorProv"]],
-        ['Trazas', 'mdi-history', '/admin/trazas', ["Administrador", "AdministradorProv"]],
-        ['Cambio contraseña', 'mdi-file-outline', '/contrasena', ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI", "Técnico"]],
-        ['Salir', 'mdi-logout', '/login', ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI", "Técnico"]],
-      ],  
-      items: [
-        { icon: "mdi-home", title: "Inicio", to: "/admin", role: ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI", "Técnico"] },
-        { icon: "mdi-office-building", title: "Joven Clubs", to: "/admin/jc", role: ["Administrador", "AdministradorProv", "DirectorMunicipal"] },
-        { icon: "mdi-laptop", title: "Computadoras", to: "/admin/pc", role: ["Administrador", "AdministradorProv", "DirectorMunicipal", "AdministradorJC", "Supervisor", "RSI", "Técnico"] },
-        { icon: "mdi-account-multiple-outline", title: "Instructores", to: "/admin/user", role: ["Administrador", "AdministradorProv", "DirectorMunicipal"] }
-      ]
-    }
+    return { drawer: true }
   },
   computed: {
     user() {
-      return this.$store.state.auth.user
-    },
-    jcs() {
-      return this.$store.state.jcs.list
+      if (process.client) {
+        const u = localStorage.getItem('user')
+        return u ? JSON.parse(u) : null
+      }
+      return null
     }
   },
   methods: {
-    async Salir() {
-      await this.$auth.logout()
-      this.$router.push("/login")
-    },
-    isAllow(roleList) {
-      if (!this.user || !this.user.rol || !this.user.rol.nombre) return false
-      return roleList.includes(this.user.rol.nombre.trim())
+    Salir() {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      this.$router.push('/login')
     }
   }
 }

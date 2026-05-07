@@ -1,24 +1,11 @@
 <template>
-
-  <v-app >
-    <v-main :style="backgroundDiv">
-        <nuxt />
+  <v-app>
+    <v-main style="background-color: #FFF9C4; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+      <nuxt />
     </v-main>
   </v-app>
 </template>
 
 <script>
-export default {
-  data:() =>({
-  backgroundDiv : {
-        backgroundImage : 'url(' + require('../assets/fondopc.jpg') + ')',
-        backgroundRepeat : 'no-repeat',
-        backgroundSize : '100% 100%'
-  }  
-  }), 
-  
-};
+export default {}
 </script>
-//color azul #0D47A1 marillo #FFC107 color bey #FFFF90  style="background-color: #FFFF90"
-<style>
-</style>

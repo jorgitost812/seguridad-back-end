@@ -1,36 +1,25 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Req } from '@nestjs/common';
 import { TrazasService } from './trazas.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
+import { JcGuard } from '../auth/jc.guard';
 
 @Controller('api/trazas')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, JcGuard)
 export class TrazasController {
   constructor(private readonly trazasService: TrazasService) {}
 
   @Get()
-  @Roles('Administrador', 'AdministradorProv')
   async getAll(
-    @Query('jcId') jcId?: string,
+    @Req() req: any,
     @Query('limit') limit?: string,
     @Query('entidad') entidad?: string,
     @Query('accion') accion?: string,
   ) {
     return this.trazasService.findAll({
-      jcId: jcId ? parseInt(jcId) : undefined,
-      limit: limit ? parseInt(limit) : 20,
+      jcId: req.jcId,
+      limit: limit ? parseInt(limit) : 50,
       entidad,
       accion,
     });
-  }
-
-  @Get('by-jc')
-  @Roles('Administrador', 'AdministradorProv', 'AdministradorJC')
-  async getByJc(@Query('jcId') jcId: string, @Query('limit') limit?: string) {
-    return this.trazasService.findByJcId(
-      parseInt(jcId),
-      limit ? parseInt(limit) : 20,
-    );
   }
 }
