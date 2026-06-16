@@ -8,7 +8,7 @@ import { ApiTags } from '@nestjs/swagger';
 export class AppController {
   constructor(
     @InjectDataSource()
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
   ) {}
 
   @Get('test-db')
@@ -18,12 +18,12 @@ export class AppController {
       return {
         status: 'Connected',
         timestamp: result[0].now,
-        database: this.dataSource.options.database
+        database: this.dataSource.options.database,
       };
     } catch (error) {
       return {
         status: 'Error',
-        message: error.message
+        message: error.message,
       };
     }
   }

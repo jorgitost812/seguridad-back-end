@@ -8,7 +8,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Add global ClassSerializerInterceptor
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get('Reflector')));
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(app.get('Reflector')),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -17,7 +19,7 @@ async function bootstrap() {
       transformOptions: {
         enableImplicitConversion: true,
       },
-    })
+    }),
   );
 
   const config = new DocumentBuilder()

@@ -8,9 +8,9 @@ import { TrazasModule } from '../trazas/trazas.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Computadora]),
-    TrazasModule  // ← IMPORTANTE: Agregar TrazasModule
+    TrazasModule, // ← IMPORTANTE: Agregar TrazasModule
   ],
   providers: [PcService],
-  controllers: [PcController]
+  controllers: [PcController],
 })
 export class PcModule {}

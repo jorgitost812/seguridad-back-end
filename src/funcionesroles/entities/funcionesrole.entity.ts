@@ -1,12 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class funcionesRol{
+export class funcionesRol {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-@PrimaryGeneratedColumn()
-id: number;
-
-@Column()
-nombre: string;
-
+  @Column()
+  nombre: string;
 }

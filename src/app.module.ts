@@ -8,7 +8,6 @@ import { AuthModule } from './auth/auth.module';
 import { TrazasModule } from './trazas/trazas.module';
 import { InventarioModule } from './inventario/inventario.module';
 
-
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -21,14 +20,14 @@ import { InventarioModule } from './inventario/inventario.module';
       entities: ['dist/**/*.entity{.ts,.js}'],
       synchronize: true,
       retryDelay: 3000,
-      retryAttempts: 10
+      retryAttempts: 10,
     }),
     JovenclubModule,
     PcModule,
     UsuariosModule,
     AuthModule,
     TrazasModule,
-    InventarioModule
+    InventarioModule,
   ],
   controllers: [AppController],
   providers: [],

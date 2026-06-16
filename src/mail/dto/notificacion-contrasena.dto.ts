@@ -1,8 +1,5 @@
-
-
 export class NotificacionContrasenaDto {
+  responsable: string;
 
-    responsable:  string;
-
-    computadora: string;
+  computadora: string;
 }

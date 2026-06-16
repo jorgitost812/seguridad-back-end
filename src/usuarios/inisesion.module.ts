@@ -4,13 +4,10 @@ import { iniSesionService } from './services/inisesion.service';
 import { iniSesionController } from './controllers/inisesion.controller';
 import { iniSesion } from './entities/inisesion.entity';
 
-
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([iniSesion])
-  ],
+  imports: [TypeOrmModule.forFeature([iniSesion])],
   providers: [iniSesionService],
   controllers: [iniSesionController],
-  exports: [iniSesionService, TypeOrmModule]
+  exports: [iniSesionService, TypeOrmModule],
 })
 export class iniSesionModule {}

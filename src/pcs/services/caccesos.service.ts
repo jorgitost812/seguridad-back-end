@@ -1,4 +1,10 @@
-import { Get, Injectable, InternalServerErrorException, Logger, UseGuards } from '@nestjs/common';
+import {
+  Get,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { logger } from 'handlebars';
 import { json } from 'stream/consumers';
@@ -12,16 +18,16 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 export class cAccesosService {
   constructor(
     @InjectRepository(cAccesos)
-    private caccesosRepo: Repository<cAccesos>
+    private caccesosRepo: Repository<cAccesos>,
   ) {}
 
   async create(createAccesoDto: CreateAccesoDto) {
     try {
       const newAcceso = this.caccesosRepo.create({
         ...createAccesoDto,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
-      
+
       return await this.caccesosRepo.save(newAcceso);
     } catch (error) {
       throw new Error(`Error creating acceso: ${error.message}`);
@@ -29,7 +35,7 @@ export class cAccesosService {
   }
   async findByJovenClub(jcId: string): Promise<cAccesos[]> {
     return await this.caccesosRepo.find({
-      where: { nombrejc: jcId }
+      where: { nombrejc: jcId },
     });
   }
 
@@ -40,15 +46,15 @@ export class cAccesosService {
       const accesos = await this.caccesosRepo.find({
         select: {
           nombrejc: true,
-          nombrepc: true, 
+          nombrepc: true,
           tecnico: true,
           supervisor: true,
           causa: true,
-          createdAt: true
+          createdAt: true,
         },
         order: {
-          createdAt: 'DESC'
-        }
+          createdAt: 'DESC',
+        },
       });
       return accesos;
     } catch (error) {
@@ -61,38 +67,40 @@ export class cAccesosService {
 
   findBy(filtro) {
     console.log('find2');
-    var query = "";
+    var query = '';
     if (filtro.nombrejc) {
-      if (query !== "")
-        query += ",";
+      if (query !== '') query += ',';
       query += "caccesos.nombrejc = '" + filtro.nombrejc + "'";
     }
     if (filtro.nombrepc) {
-      if (query !== "")
-        query += " and ";
+      if (query !== '') query += ' and ';
       query += "caccesos.nombrepc = '" + filtro.nombrepc + "'";
     }
     if (filtro.causa) {
-      if (query !== "")
-        query += " and ";
+      if (query !== '') query += ' and ';
       query += "caccesos.causa = '" + filtro.causa + "'";
-    } if (filtro.supervisor) {
-      if (query !== "")
-        query += " and ";
+    }
+    if (filtro.supervisor) {
+      if (query !== '') query += ' and ';
       query += "caccesos.supervisor = '" + filtro.supervisor + "'";
-    } if (filtro.tecnico) {
-      if (query !== "")
-        query += " and ";
+    }
+    if (filtro.tecnico) {
+      if (query !== '') query += ' and ';
       query += "caccesos.tecnico = '" + filtro.tecnico + "'";
-    } if (filtro.admin) {
-      if (query !== "")
-        query += " and ";
+    }
+    if (filtro.admin) {
+      if (query !== '') query += ' and ';
       query += "caccesos.admin = '" + filtro.admin + "'";
     }
 
     //return query;
 
-    return getRepository(cAccesos).createQueryBuilder().select("caccesos").from(cAccesos, "caccesos").where(query).getMany();
+    return getRepository(cAccesos)
+      .createQueryBuilder()
+      .select('caccesos')
+      .from(cAccesos, 'caccesos')
+      .where(query)
+      .getMany();
 
     /*var json = {"causa":"",
        "nombrejc":"nombrejc",
@@ -109,12 +117,26 @@ export class cAccesosService {
 
   findByRange(filtro) {
     console.log('find3');
-    var query = "caccesos.createdAt between " + "'" + filtro.desde + "'" + " and " + "'" + filtro.hasta + "'" + "";
+    var query =
+      'caccesos.createdAt between ' +
+      "'" +
+      filtro.desde +
+      "'" +
+      ' and ' +
+      "'" +
+      filtro.hasta +
+      "'" +
+      '';
 
     //return query;
     //Logger.log(query);
 
-    return getRepository(cAccesos).createQueryBuilder().select("caccesos").from(cAccesos, "caccesos").where(query).getMany();
+    return getRepository(cAccesos)
+      .createQueryBuilder()
+      .select('caccesos')
+      .from(cAccesos, 'caccesos')
+      .where(query)
+      .getMany();
 
     /*var json = {"causa":"",
        "nombrejc":"nombrejc",
@@ -129,7 +151,6 @@ export class cAccesosService {
     //return this.caccesosRepo.find({ where: { nombrejc: nombrejc}} && { where: { nombrepc: nombrepc}});*/
   }
 
-
   createControl(body: any) {
     let newControl = {
       nombrejc: body.nombrejc,
@@ -138,23 +159,22 @@ export class cAccesosService {
       tecnico: body.tecnico,
       supervisor: body.supervisor,
       causa: body.causa,
-      inventario: body.inventario
-    }
+      inventario: body.inventario,
+    };
 
     const nuevaTarea = this.caccesosRepo.create(newControl);
     return this.caccesosRepo.save(nuevaTarea);
   }
 
-
   async generatePDF(filtro): Promise<Buffer> {
     var json = {
-      "causa": "",
-      "nombrejc": "",
-      "nombrepc": "",
-      "inventario": "",
-      "supervisor": "",
-      "tecnico": "",
-      "admin": ""
+      causa: '',
+      nombrejc: '',
+      nombrepc: '',
+      inventario: '',
+      supervisor: '',
+      tecnico: '',
+      admin: '',
     };
 
     var list = this.findBy(filtro);
@@ -175,27 +195,55 @@ export class cAccesosService {
     var json2 = JSON.stringify(array);
 
     //const PDFDocument = require('pdfkit');
-    const PDFDocument = require("pdfkit-table");
+    const PDFDocument = require('pdfkit-table');
     const fs = require('fs');
 
     const table = {
-      title: "ACCESOS",
+      title: 'ACCESOS',
       //subtitle: "Subtitle",
       headers: [
-        { label: "Joven Club", property: 'nombrejc', width: 80, renderer: null },
-        { label: "Computadora", property: 'nombrepc', width: 80, renderer: null },
-        { label: "Administrador", property: 'admin', width: 80, renderer: null },
-        { label: "Causa", property: 'causa', width: 80, renderer: null },
-        { label: "Supervisor", property: 'supervisor', width: 80, renderer: null },
-        { label: "Invemtario", property: 'inventario', width: 80, renderer: null },
         {
-          label: "Técnico", property: 'tecnico', width: 80,
-          renderer: (value, indexColumn, indexRow, row) => { return value /*`U$ ${Number(value).toFixed(2)}`*/ }
+          label: 'Joven Club',
+          property: 'nombrejc',
+          width: 80,
+          renderer: null,
+        },
+        {
+          label: 'Computadora',
+          property: 'nombrepc',
+          width: 80,
+          renderer: null,
+        },
+        {
+          label: 'Administrador',
+          property: 'admin',
+          width: 80,
+          renderer: null,
+        },
+        { label: 'Causa', property: 'causa', width: 80, renderer: null },
+        {
+          label: 'Supervisor',
+          property: 'supervisor',
+          width: 80,
+          renderer: null,
+        },
+        {
+          label: 'Invemtario',
+          property: 'inventario',
+          width: 80,
+          renderer: null,
+        },
+        {
+          label: 'Técnico',
+          property: 'tecnico',
+          width: 80,
+          renderer: (value, indexColumn, indexRow, row) => {
+            return value; /*`U$ ${Number(value).toFixed(2)}`*/
+          },
         },
       ],
       // complex data
-      datas:
-        JSON.parse(json2)
+      datas: JSON.parse(json2),
       /*[
         { 
           name: 'Name 1', 
@@ -235,51 +283,48 @@ export class cAccesosService {
        ],*/
     };
 
-
-
-    const pdfBuffer: Buffer = await new Promise(resolve => {
+    const pdfBuffer: Buffer = await new Promise((resolve) => {
       const doc = new PDFDocument({
         margin: 30,
         size: 'LETTER',
         bufferPages: true,
-      })
+      });
 
       // customize your PDF document
       //const content = 'Contenido del pdf.';
       //doc.text(dato, 50, 50)
 
       doc.table(table, {
-        prepareHeader: () => doc.font("Helvetica-Bold").fontSize(8),
+        prepareHeader: () => doc.font('Helvetica-Bold').fontSize(8),
         prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
-          doc.font("Helvetica").fontSize(8);
+          doc.font('Helvetica').fontSize(8);
           /*indexColumn === 0 && doc.addBackground(rectRow, 'blue', 0.15);*/
         },
       });
 
-      doc.end()
+      doc.end();
 
-      const buffer = []
-      doc.on('data', buffer.push.bind(buffer))
+      const buffer = [];
+      doc.on('data', buffer.push.bind(buffer));
       doc.on('end', () => {
-        const data = Buffer.concat(buffer)
-        resolve(data)
-      })
-    })
+        const data = Buffer.concat(buffer);
+        resolve(data);
+      });
+    });
 
-    return pdfBuffer
+    return pdfBuffer;
   }
-
 
   async generatePDFByRange(filtro): Promise<Buffer> {
     //console.log(filtro.desde);
     var json = {
-      "causa": "",
-      "nombrejc": "jc",
-      "nombrepc": "",
-      "inventario": "",
-      "supervisor": "",
-      "tecnico": "",
-      "admin": ""
+      causa: '',
+      nombrejc: 'jc',
+      nombrepc: '',
+      inventario: '',
+      supervisor: '',
+      tecnico: '',
+      admin: '',
     };
 
     var list = this.findByRange(filtro);
@@ -300,27 +345,55 @@ export class cAccesosService {
     var json2 = JSON.stringify(array);
 
     //const PDFDocument = require('pdfkit');
-    const PDFDocument = require("pdfkit-table");
+    const PDFDocument = require('pdfkit-table');
     const fs = require('fs');
 
     const table = {
-      title: "ACCESOS",
+      title: 'ACCESOS',
       //subtitle: "Subtitle",
       headers: [
-        { label: "Joven Club", property: 'nombrejc', width: 80, renderer: null },
-        { label: "Computadora", property: 'nombrepc', width: 80, renderer: null },
-        { label: "Administrador", property: 'admin', width: 80, renderer: null },
-        { label: "Causa", property: 'causa', width: 80, renderer: null },
-        { label: "Supervisor", property: 'supervisor', width: 80, renderer: null },
-        { label: "Invemtario", property: 'inventario', width: 80, renderer: null },
         {
-          label: "Técnico", property: 'tecnico', width: 80,
-          renderer: (value, indexColumn, indexRow, row) => { return value /*`U$ ${Number(value).toFixed(2)}`*/ }
+          label: 'Joven Club',
+          property: 'nombrejc',
+          width: 80,
+          renderer: null,
+        },
+        {
+          label: 'Computadora',
+          property: 'nombrepc',
+          width: 80,
+          renderer: null,
+        },
+        {
+          label: 'Administrador',
+          property: 'admin',
+          width: 80,
+          renderer: null,
+        },
+        { label: 'Causa', property: 'causa', width: 80, renderer: null },
+        {
+          label: 'Supervisor',
+          property: 'supervisor',
+          width: 80,
+          renderer: null,
+        },
+        {
+          label: 'Invemtario',
+          property: 'inventario',
+          width: 80,
+          renderer: null,
+        },
+        {
+          label: 'Técnico',
+          property: 'tecnico',
+          width: 80,
+          renderer: (value, indexColumn, indexRow, row) => {
+            return value; /*`U$ ${Number(value).toFixed(2)}`*/
+          },
         },
       ],
       // complex data
-      datas:
-        JSON.parse(json2)
+      datas: JSON.parse(json2),
       /*[
         { 
           name: 'Name 1', 
@@ -360,44 +433,46 @@ export class cAccesosService {
        ],*/
     };
 
-
-
-    const pdfBuffer: Buffer = await new Promise(resolve => {
+    const pdfBuffer: Buffer = await new Promise((resolve) => {
       const doc = new PDFDocument({
         margin: 30,
         size: 'LETTER',
         bufferPages: true,
-      })
+      });
 
       // customize your PDF document
       //const content = 'Contenido del pdf.';
       //doc.text(dato, 50, 50)
 
       doc.table(table, {
-        prepareHeader: () => doc.font("Helvetica-Bold").fontSize(8),
+        prepareHeader: () => doc.font('Helvetica-Bold').fontSize(8),
         prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
-          doc.font("Helvetica").fontSize(8);
+          doc.font('Helvetica').fontSize(8);
           /*indexColumn === 0 && doc.addBackground(rectRow, 'blue', 0.15);*/
         },
       });
 
-      doc.end()
+      doc.end();
 
-      const buffer = []
-      doc.on('data', buffer.push.bind(buffer))
+      const buffer = [];
+      doc.on('data', buffer.push.bind(buffer));
       doc.on('end', () => {
-        const data = Buffer.concat(buffer)
-        resolve(data)
-      })
-    })
+        const data = Buffer.concat(buffer);
+        resolve(data);
+      });
+    });
 
-    return pdfBuffer
+    return pdfBuffer;
   }
-
 
   //Este es de juan m de prueba
   findByTest(filtro) {
-    var query = "caccesos.createdAt >= '" + filtro.desde + "' and caccesos.createdAt <= '" + filtro.hasta + "'";
+    var query =
+      "caccesos.createdAt >= '" +
+      filtro.desde +
+      "' and caccesos.createdAt <= '" +
+      filtro.hasta +
+      "'";
     /* if(filtro.nombrejc)
      {
         if(query !== "")
@@ -434,7 +509,11 @@ export class cAccesosService {
 
     //return query;
 
-    return getRepository(cAccesos).createQueryBuilder().select("caccesos").from(cAccesos, "caccesos").where(query).getMany();
+    return getRepository(cAccesos)
+      .createQueryBuilder()
+      .select('caccesos')
+      .from(cAccesos, 'caccesos')
+      .where(query)
+      .getMany();
   }
-
 }

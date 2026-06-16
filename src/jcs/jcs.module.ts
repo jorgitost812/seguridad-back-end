@@ -4,10 +4,8 @@ import { JovenclubService } from './services/jcs.service';
 import { JovenclubController } from './controllers/jcs.controller';
 import { Jclub } from './entities/jc.entity';
 @Module({
-  imports:[
-    TypeOrmModule.forFeature([Jclub])
-  ],
+  imports: [TypeOrmModule.forFeature([Jclub])],
   providers: [JovenclubService],
-  controllers: [JovenclubController]
+  controllers: [JovenclubController],
 })
 export class JovenclubModule {}

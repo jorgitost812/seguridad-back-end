@@ -8,6 +8,6 @@ import { TrazasController } from './trazas.controller';
   imports: [TypeOrmModule.forFeature([Traza])],
   providers: [TrazasService],
   controllers: [TrazasController],
-  exports: [TrazasService],  // ← Exportar para que otros módulos lo usen
+  exports: [TrazasService], // ← Exportar para que otros módulos lo usen
 })
 export class TrazasModule {}

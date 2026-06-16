@@ -1,5 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn } from 'typeorm';
-import {  Computadora } from '../../pcs/entities/pc.entity';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  CreateDateColumn,
+} from 'typeorm';
+import { Computadora } from '../../pcs/entities/pc.entity';
 
 @Entity('c_accesos')
 export class Acceso {
@@ -33,6 +39,6 @@ export class Acceso {
   @Column({ default: false })
   admin: boolean;
 
-  @ManyToOne(() => Computadora, pc => pc.accesos)
+  @ManyToOne(() => Computadora, (pc) => pc.accesos)
   pc: Computadora;
 }

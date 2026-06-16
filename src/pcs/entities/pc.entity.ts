@@ -1,35 +1,41 @@
 import { Acceso } from 'src/accesos/entities/accesos.entity';
 import { Jclub } from 'src/jcs/entities/jc.entity';
 
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, JoinColumn, OneToMany} from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 
 @Entity()
-export class Computadora{
+export class Computadora {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-@PrimaryGeneratedColumn()
-id: number;
+  @Column()
+  nombre: string;
 
-@Column()
-nombre: string;
+  @Column()
+  numero: string;
 
-@Column()
-numero: string;
+  @Column()
+  ip: string;
 
-@Column()
-ip: string;
+  @Column('json', { nullable: true })
+  pwd: object;
 
-@Column('json', {nullable: true})
-pwd: object;
+  @Column('json', { nullable: true })
+  setupPwd: object;
 
-@Column('json', {nullable: true})
-setupPwd: object;
+  @ManyToOne(() => Jclub, (jc) => jc.computadoras) // Debe apuntar a la propiedad en Jclub
+  @JoinColumn({ name: 'jc_id' })
+  jc: Jclub;
 
-@ManyToOne(() => Jclub, jc => jc.computadoras) // Debe apuntar a la propiedad en Jclub
-@JoinColumn({ name: 'jc_id' })
-jc: Jclub;
-
-@OneToMany(() => Acceso, acceso => acceso.pc, {
-    onDelete: 'CASCADE' // Esto eliminará automáticamente los accesos relacionados
+  @OneToMany(() => Acceso, (acceso) => acceso.pc, {
+    onDelete: 'CASCADE', // Esto eliminará automáticamente los accesos relacionados
   })
   accesos: Acceso[];
 }

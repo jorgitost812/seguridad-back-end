@@ -34,8 +34,10 @@
       <v-app-bar-nav-icon v-if="user" @click.stop="drawer = !drawer" />
       <v-toolbar-title>Sistema de Gestión de Inventarios - JC Las Tunas</v-toolbar-title>
       <v-spacer></v-spacer>
-      <span style="color: #FFC107;" v-if="user">{{ user?.nombre }} ({{ user?.rol?.nombre }})</span>
-      <v-btn small class="ml-2" icon @click="Salir" color="#FFC107"><v-icon>mdi-logout</v-icon></v-btn>
+      <span style="color: #FFC107;" v-if="user" class="mr-4">{{ user?.nombre }} ({{ user?.rol?.nombre }})</span>
+      <v-btn color="#FFC107" outlined @click="Salir">
+        <v-icon left>mdi-logout</v-icon>Salir
+      </v-btn>
     </v-app-bar>
 
     <v-main style="background-color: #FFF9C4">
@@ -52,9 +54,7 @@
 
 <script>
 export default {
-  data() {
-    return { drawer: true }
-  },
+  data() { return { drawer: true } },
   computed: {
     user() {
       if (process.client) {

@@ -3,18 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Acceso } from '../entities/accesos.entity';
 
-
 @Injectable()
 export class ReportesService {
   constructor(
     @InjectRepository(Acceso)
-    private accesoRepository: Repository<Acceso>
+    private accesoRepository: Repository<Acceso>,
   ) {}
 
   async findByJC(nombrejc: string): Promise<Acceso[]> {
     return this.accesoRepository.find({
       where: { nombrejc },
-      relations: ['pc']
+      relations: ['pc'],
     });
   }
 

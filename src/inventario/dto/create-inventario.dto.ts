@@ -1,4 +1,10 @@
-import { IsString, IsNumber, IsNotEmpty, Min } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsNotEmpty,
+  Min,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateInventarioDto {
   @IsString()
@@ -11,9 +17,10 @@ export class CreateInventarioDto {
 
   @IsNumber()
   @Min(0)
+  @IsOptional()
   precio: number;
 
   @IsNumber()
-  @IsNotEmpty({ message: 'La ubicación es requerida' })
+  @IsOptional()
   jcId: number;
 }

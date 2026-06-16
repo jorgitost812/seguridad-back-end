@@ -9,6 +9,6 @@ import { TrazasModule } from '../trazas/trazas.module';
   imports: [TypeOrmModule.forFeature([Inventario]), TrazasModule],
   providers: [InventarioService],
   controllers: [InventarioController],
-  exports: [InventarioService]
+  exports: [InventarioService],
 })
 export class InventarioModule {}

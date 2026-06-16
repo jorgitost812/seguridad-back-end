@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 
 @Injectable()
 export class JcGuard implements CanActivate {
@@ -16,7 +21,7 @@ export class JcGuard implements CanActivate {
       throw new ForbiddenException('No tienes un JC asignado');
     }
 
-    request.jcId = userJcId;  // ← Esto es lo que usan los controladores
+    request.jcId = userJcId; // ← Esto es lo que usan los controladores
     return true;
   }
 }

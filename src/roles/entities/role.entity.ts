@@ -1,15 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class Rol{
+export class Rol {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-@PrimaryGeneratedColumn()
-id: number;
+  @Column()
+  nombre: string;
 
-@Column()
-nombre: string;
-
-@Column({ default: '' })
-descripcion: string;
-
+  @Column({ default: '' })
+  descripcion: string;
 }

@@ -1,6 +1,11 @@
-import { BadRequestException, Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ReportesService } from '../services/accesos.service';
-
 
 @Controller('api/reportes')
 export class ReportesController {
@@ -8,7 +13,7 @@ export class ReportesController {
 
   @Get('pc/:id_joven_club')
   async getReportePC(
-    @Param('id_joven_club', ParseIntPipe) idJovenClub: number
+    @Param('id_joven_club', ParseIntPipe) idJovenClub: number,
   ) {
     return this.reportesService.getReportePC(idJovenClub);
   }

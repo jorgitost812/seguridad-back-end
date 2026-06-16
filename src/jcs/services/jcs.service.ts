@@ -6,44 +6,46 @@ import { Jclub } from '../entities/jc.entity';
 
 @Injectable()
 export class JovenclubService {
-   constructor(
-    @InjectRepository(Jclub) private jovenClubRepo: Repository <Jclub>) {}
+  constructor(
+    @InjectRepository(Jclub) private jovenClubRepo: Repository<Jclub>,
+  ) {}
 
-   findAll(){
-      return this.jovenClubRepo.find({relations: ['municipio'] });
-   }
-   findOne(id: number) {
+  findAll() {
+    return this.jovenClubRepo.find({ relations: ['municipio'] });
+  }
+  findOne(id: number) {
     return this.jovenClubRepo.findOne({
       where: { id },
-      relations: ['municipio']
+      relations: ['municipio'],
     });
   }
-   create(body: any){
-       const nuevaTarea = this.jovenClubRepo.create(body);
-       return this.jovenClubRepo.save(nuevaTarea);
-   } 
-   async update(id: number, body: any){
+  create(body: any) {
+    const nuevaTarea = this.jovenClubRepo.create(body);
+    return this.jovenClubRepo.save(nuevaTarea);
+  }
+  async update(id: number, body: any) {
     const tarea = await this.jovenClubRepo.findOne({ where: { id } });
     this.jovenClubRepo.merge(tarea, body);
     return this.jovenClubRepo.save(tarea);
-   } 
-   async delete(id: number){
+  }
+  async delete(id: number) {
     await this.jovenClubRepo.delete(id);
     return true;
-   }
-   findByIdMunicipio(municipio): Promise<Jclub[]> {
+  }
+  findByIdMunicipio(municipio): Promise<Jclub[]> {
     console.log('Finding JCs for municipio ID:', municipio);
-    return this.jovenClubRepo.find({ 
-        where: { 
-            municipio: { id: municipio } 
-        }, 
-        relations: ['municipio'] 
+    return this.jovenClubRepo.find({
+      where: {
+        municipio: { id: municipio },
+      },
+      relations: ['municipio'],
     });
-}
+  }
   findByNombreMunicipio(nombre): Promise<Jclub[]> {
-      return this.jovenClubRepo.createQueryBuilder("jc")
-      .innerJoinAndSelect("jc.municipio", "municipio")
-      .where("municipio.nombre = :nombre", { nombre: nombre })
+    return this.jovenClubRepo
+      .createQueryBuilder('jc')
+      .innerJoinAndSelect('jc.municipio', 'municipio')
+      .where('municipio.nombre = :nombre', { nombre: nombre })
       .getMany();
   }
 }

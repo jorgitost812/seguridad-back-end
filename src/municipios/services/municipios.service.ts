@@ -6,33 +6,33 @@ import { Municipio } from '../entities/municipio.entity';
 
 @Injectable()
 export class MunicipiosService {
-   constructor(
-    @InjectRepository(Municipio) private municipioRepo: Repository <Municipio>
-   ) {}
+  constructor(
+    @InjectRepository(Municipio) private municipioRepo: Repository<Municipio>,
+  ) {}
 
-   findAll(){
-      return this.municipioRepo.find({relations: ['provincia'] });
-   }
-   findOne(id: number){
+  findAll() {
+    return this.municipioRepo.find({ relations: ['provincia'] });
+  }
+  findOne(id: number) {
     return this.municipioRepo.findOne({
       where: { id },
-      relations: ['provincia']
+      relations: ['provincia'],
     });
-   }
-   create(body: any){
-       const nuevoMunicipio = this.municipioRepo.create(body);
-       return this.municipioRepo.save(nuevoMunicipio);
-   } 
-   async update(id: number, body: any){
+  }
+  create(body: any) {
+    const nuevoMunicipio = this.municipioRepo.create(body);
+    return this.municipioRepo.save(nuevoMunicipio);
+  }
+  async update(id: number, body: any) {
     const municipio = await this.municipioRepo.findOne({ where: { id } });
     this.municipioRepo.merge(municipio, body);
     return this.municipioRepo.save(municipio);
-   } 
-   async delete(id: number){
+  }
+  async delete(id: number) {
     await this.municipioRepo.delete(id);
-    return "Municipio Eliminado";
-   }
-   async findByProvincia(provinciaId: number): Promise<Municipio[]> {
+    return 'Municipio Eliminado';
+  }
+  async findByProvincia(provinciaId: number): Promise<Municipio[]> {
     return this.municipioRepo.find({
       where: { provincia: { id: provinciaId } },
       relations: ['provincia'],

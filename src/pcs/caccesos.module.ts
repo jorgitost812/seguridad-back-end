@@ -4,10 +4,8 @@ import { cAccesosService } from './services/caccesos.service';
 import { cAccesosController } from './controllers/caccesos.controller';
 import { cAccesos } from './entities/caccesos.entity';
 @Module({
-  imports:[
-    TypeOrmModule.forFeature([cAccesos])
-  ],
+  imports: [TypeOrmModule.forFeature([cAccesos])],
   providers: [cAccesosService],
-  controllers: [cAccesosController]
+  controllers: [cAccesosController],
 })
 export class cAccesosModule {}

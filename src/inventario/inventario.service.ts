@@ -16,24 +16,34 @@ export class InventarioService {
   ) {}
 
   async findAll(): Promise<Inventario[]> {
-    return this.inventarioRepo.find({ relations: ['ubicacion'], order: { createdAt: 'DESC' } });
+    return this.inventarioRepo.find({
+      relations: ['ubicacion'],
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async findOne(id: number): Promise<Inventario> {
-    const item = await this.inventarioRepo.findOne({ where: { id }, relations: ['ubicacion'] });
+    const item = await this.inventarioRepo.findOne({
+      where: { id },
+      relations: ['ubicacion'],
+    });
     if (!item) throw new NotFoundException(`Item #${id} no encontrado`);
     return item;
   }
 
   async findByJovenClub(jcId: number): Promise<Inventario[]> {
-    return this.inventarioRepo.find({ where: { ubicacion: { id: jcId } }, relations: ['ubicacion'], order: { createdAt: 'DESC' } });
+    return this.inventarioRepo.find({
+      where: { ubicacion: { id: jcId } },
+      relations: ['ubicacion'],
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async create(dto: CreateInventarioDto, user: any): Promise<Inventario> {
     const newItem = this.inventarioRepo.create({
       nombre: dto.nombre,
-      estado: dto.estado,
-      precio: dto.precio,
+      estado: dto.estado || 'Bueno',
+      precio: dto.precio || 0,
       ubicacion: { id: dto.jcId } as Jclub,
     });
     const savedItem = await this.inventarioRepo.save(newItem);
@@ -46,13 +56,27 @@ export class InventarioService {
       entidadId: savedItem.id,
       entidadNombre: savedItem.nombre,
       jcId: dto.jcId,
-      detalles: { nombre: savedItem.nombre, estado: savedItem.estado, precio: savedItem.precio }
+      detalles: {
+        nombre: savedItem.nombre,
+        estado: savedItem.estado,
+        precio: savedItem.precio,
+      },
     });
     return savedItem;
   }
 
-  async update(id: number, dto: UpdateInventarioDto, user: any): Promise<Inventario> {
+  async update(
+    id: number,
+    dto: UpdateInventarioDto,
+    user: any,
+  ): Promise<Inventario> {
     const item = await this.findOne(id);
+    const oldData = {
+      nombre: item.nombre,
+      estado: item.estado,
+      precio: item.precio,
+    };
+
     if (dto.nombre !== undefined) item.nombre = dto.nombre;
     if (dto.estado !== undefined) item.estado = dto.estado;
     if (dto.precio !== undefined) item.precio = dto.precio;
@@ -68,14 +92,26 @@ export class InventarioService {
       entidadId: updatedItem.id,
       entidadNombre: updatedItem.nombre,
       jcId: updatedItem.ubicacion?.id,
-      detalles: { nombre: updatedItem.nombre, estado: updatedItem.estado, precio: updatedItem.precio }
+      detalles: {
+        before: oldData,
+        after: {
+          nombre: updatedItem.nombre,
+          estado: updatedItem.estado,
+          precio: updatedItem.precio,
+        },
+      },
     });
     return updatedItem;
   }
 
   async delete(id: number, user: any): Promise<void> {
     const item = await this.findOne(id);
-    const itemData = { nombre: item.nombre, estado: item.estado, precio: item.precio, jcId: item.ubicacion?.id };
+    const itemData = {
+      nombre: item.nombre,
+      estado: item.estado,
+      precio: item.precio,
+      jcId: item.ubicacion?.id,
+    };
     await this.inventarioRepo.remove(item);
 
     await this.trazasService.create({
@@ -86,7 +122,7 @@ export class InventarioService {
       entidadId: id,
       entidadNombre: itemData.nombre,
       jcId: itemData.jcId,
-      detalles: itemData
+      detalles: itemData,
     });
   }
 }

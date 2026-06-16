@@ -15,8 +15,8 @@ import { MailController } from './mail.controller';
         port: 465,
         secure: true,
         tls: {
-          secureProtocol: "TLSv1_method",
-          rejectUnauthorized: false
+          secureProtocol: 'TLSv1_method',
+          rejectUnauthorized: false,
         },
         auth: {
           user: 'seginf',
