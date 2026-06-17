@@ -1,14 +1,18 @@
 import * as crypto from 'crypto';
+import * as dotenv from 'dotenv';
+// Load environment variables early so ENCRYPTION_KEY is available at import time
+dotenv.config({ path: '.env' });
 
 const algorithm = 'aes-256-ctr';
-const secretKey = process.env.ENCRYPTION_KEY;
-
-if (!secretKey) {
-  throw new Error('ENCRYPTION_KEY environment variable is required');
-}
-
-if (secretKey.length < 32) {
-  throw new Error('ENCRYPTION_KEY must be at least 32 characters');
+function getSecretKey(): string {
+  const key = process.env.ENCRYPTION_KEY;
+  if (!key) {
+    throw new Error('ENCRYPTION_KEY environment variable is required');
+  }
+  if (key.length < 32) {
+    throw new Error('ENCRYPTION_KEY must be at least 32 characters');
+  }
+  return key;
 }
 
 export const encrypt = (text: string) => {
@@ -17,7 +21,7 @@ export const encrypt = (text: string) => {
   }
 
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
+  const cipher = crypto.createCipheriv(algorithm, getSecretKey(), iv);
   const encrypted = Buffer.concat([
     cipher.update(text, 'utf8'),
     cipher.final(),
@@ -36,7 +40,7 @@ export const decrypt = (hash: any) => {
 
   const decipher = crypto.createDecipheriv(
     algorithm,
-    secretKey,
+    getSecretKey(),
     Buffer.from(hash.iv, 'hex'),
   );
   const decrpyted = Buffer.concat([
