@@ -41,8 +41,7 @@ export default {
   ],
 
   modules: [
-    '@nuxtjs/axios',
-    '@nuxtjs/auth-next'
+    '@nuxtjs/axios'
   ],
 
   // Axios configuration
@@ -52,37 +51,6 @@ export default {
   },
 
   // Auth configuration
-  auth: {
-    strategies: {
-      local: {
-        token: {
-          property: 'access_token',
-          global: true,
-          required: true,
-          type: 'Bearer'
-        },
-        user: {
-          property: 'user',
-          autoFetch: true
-        },
-        endpoints: {
-          login: { url: '/api/auth/login', method: 'post' },
-          logout: { url: '/api/auth/logout', method: 'post' },
-          user: { url: '/api/auth/profile', method: 'get' }
-        }
-      }
-    },
-    redirect: {
-      login: '/login',
-      logout: '/',
-      callback: '/login',
-      home: '/'
-    },
-    // IMPORTANTE: Deshabilitar el store automático para evitar duplicación
-    store: false,
-    useLocalStorage: true
-  },
-
   // Vuetify configuration
   vuetify: {
     theme: {

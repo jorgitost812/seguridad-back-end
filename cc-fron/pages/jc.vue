@@ -99,13 +99,13 @@ export default {
 
   computed: {
     canEdit() {
-      return this.$auth.user?.rol?.id === 3;
+      return this.$store.state.auth.user?.rol?.id === 3;
     },
     canSelectMunicipio() {
-      return this.$auth.user?.rol?.id < 3;
+      return this.$store.state.auth.user?.rol?.id < 3;
     },
     user() {
-      return this.$auth.user;
+      return this.$store.state.auth.user;
     },
     municipios() {
       return this.$store.state.municipios.list;

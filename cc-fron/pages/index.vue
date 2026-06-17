@@ -18,17 +18,7 @@ export default {
       user = this.$store.state.auth.user
     }
     
-    // Si no hay usuario en el store, intentar recuperar del localStorage
-    if (!user && process.client) {
-      const storedUser = localStorage.getItem('user')
-      if (storedUser) {
-        try {
-          user = JSON.parse(storedUser)
-        } catch (e) {
-          console.error('Error parsing user:', e)
-        }
-      }
-    }
+
     
     console.log('=== INDEX REDIRECT ===')
     console.log('Usuario encontrado:', user ? user.email : 'No hay usuario')

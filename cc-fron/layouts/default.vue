@@ -142,7 +142,7 @@ export default {
   },
   methods: {
     async Salir() {
-      await this.$auth.logout()
+      await this.$store.dispatch('auth/logout')
       this.$router.push("/login")
     },
     isAllow(roleList) {

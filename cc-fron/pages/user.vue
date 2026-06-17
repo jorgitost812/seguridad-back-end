@@ -323,7 +323,7 @@ export default {
        await this.$store.dispatch('roles/getRoles')
        await this.$store.dispatch('provincias/getProvincias')
        
-       const user = this.$auth.user
+       const user = this.$store.state.auth.user
        console.log('Current user:', user)
 
        if (user?.jc?.municipio?.provincia?.id) {

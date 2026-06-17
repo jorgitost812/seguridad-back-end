@@ -161,7 +161,7 @@
     ]);
 
     // Establecer provincia si el usuario la tiene asignada
-    const user = this.$auth.user;
+    const user = this.$store.state.auth.user;
     if (user?.jc?.municipio?.provincia?.id) {
       this.provincia = user.jc.municipio.provincia.id;
     } else {
