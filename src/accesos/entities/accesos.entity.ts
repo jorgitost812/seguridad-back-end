@@ -1,38 +1,45 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn } from 'typeorm';
-import {  Computadora } from '../../pcs/entities/pc.entity';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn, Index, JoinColumn } from 'typeorm';
+import { Computadora } from '../../pcs/entities/pc.entity';
 
 @Entity('c_accesos')
+@Index(['computadora_id'])
+@Index(['createdAt'])
+@Index(['admin'])
 export class Acceso {
-  @PrimaryGeneratedColumn()
-  id: number;
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  @Column()
-  nombrejc: string;
+    @Column({ type: 'varchar', length: 100 })
+    nombrejc: string;
 
-  @Column()
-  nombrepc: string;
+    @Column({ type: 'varchar', length: 100 })
+    nombrepc: string;
 
-  @Column()
-  tecnico: string;
+    @Column({ type: 'varchar', length: 100 })
+    tecnico: string;
 
-  @Column()
-  supervisor: string;
+    @Column({ type: 'varchar', length: 100 })
+    supervisor: string;
 
-  @Column()
-  causa: string;
+    @Column({ type: 'text' })
+    causa: string;
 
-  @Column()
-  inventario: string;
+    @Column({ type: 'varchar', length: 100 })
+    inventario: string;
 
-  @Column({ nullable: true })
-  computadora_id: number;
+    @Column({ nullable: true })
+    computadora_id: number;
 
-  @CreateDateColumn()
-  createdAt: Date;
+    @CreateDateColumn({ type: 'timestamp with time zone' })
+    createdAt: Date;
 
-  @Column({ default: false })
-  admin: boolean;
+    @UpdateDateColumn({ type: 'timestamp with time zone' })
+    updatedAt: Date;
 
-  @ManyToOne(() => Computadora, pc => pc.accesos)
-  pc: Computadora;
+    @Column({ default: false })
+    admin: boolean;
+
+    @ManyToOne(() => Computadora, pc => pc.accesos, { nullable: false })
+    @JoinColumn({ name: 'computadora_id' })
+    pc: Computadora;
 }

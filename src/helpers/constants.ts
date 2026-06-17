@@ -1,3 +1,5 @@
-export const jwtConstants = {
-    secret: 'd4c0a76ef3c2decdd0112cb161520f1b7239ada3dc918f598f3238e741565425'
-  };
+import { ConfigService } from '@nestjs/config';
+
+export const getJwtConstants = (configService: ConfigService) => ({
+  secret: configService.get<string>('JWT_SECRET'),
+});

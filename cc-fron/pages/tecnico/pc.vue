@@ -2,7 +2,7 @@
     <div>
       <v-card class="mb-4 text-right" color="#FFF9C4" elevation="2"><v-card-text><v-btn color="primary" dark @click="abrirDialogNuevo"><v-icon left>mdi-plus</v-icon>Agregar Computadora</v-btn></v-card-text></v-card>
       <v-data-table style="background-color: #FFF9C4" :headers="headers" :items="computadoras" :loading="cargando" class="elevation-1">
-        <template v-slot:item.actions="{ item }"><v-icon small class="mr-2" @click="editarComputadora(item)">mdi-pencil</v-icon><v-icon small @click="eliminarComputadora(item)">mdi-delete</v-icon></template>
+        <template v-slot:item.actions="{ item }"><v-icon small class="mr-2" @click="editarComputadora(item)">mdi-pencil</v-icon><v-icon small v-if="user?.rol?.nombre !== 'Técnico'" @click="eliminarComputadora(item)">mdi-delete</v-icon></template>
       </v-data-table>
       <v-dialog v-model="dialog" max-width="600px">
         <v-card><v-card-title>{{ dialogTitulo }}</v-card-title><v-card-text><v-text-field v-model="form.numero" label="N. Inventario"></v-text-field><v-text-field v-model="form.nombre" label="Nombre"></v-text-field><v-text-field v-model="form.ip" label="IP"></v-text-field><v-text-field v-model="form.setup" label="Pass Setup" type="password"></v-text-field><v-text-field v-model="form.admin" label="Pass Admin" type="password"></v-text-field></v-card-text><v-card-actions><v-spacer></v-spacer><v-btn text @click="dialog=false">Cancelar</v-btn><v-btn text @click="guardar">Guardar</v-btn></v-card-actions></v-card>
