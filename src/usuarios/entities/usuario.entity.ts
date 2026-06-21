@@ -11,24 +11,24 @@ export class Usuario extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: 'varchar', length: 20 })
-    @IsNotEmpty({ message: 'El nombre es requerido' })
-    nombre: string;
+@Column({ type: 'varchar', length: 20 })
+@IsNotEmpty({ message: 'El nombre es requerido' })
+nombre: string;
 
-    @Column({ type: 'varchar', length: 30 })
-    @IsNotEmpty({ message: 'Los apellidos son requeridos' })
-    apellidos: string;
+@Column({ type: 'varchar', length: 30 })
+@IsNotEmpty({ message: 'Los apellidos son requeridos' })
+apellidos: string;
 
-    @Column({ unique: true })
-    @IsEmail({}, { message: 'Email inválido' })
-    @IsNotEmpty({ message: 'El email es requerido' })
-    email: string;
+@Column({ unique: true })
+@IsEmail({}, { message: 'Email inválido' })
+@IsNotEmpty({ message: 'El email es requerido' })
+email: string;
 
-    @Column()
-    @IsNotEmpty({ message: 'La contraseña es requerida' })
-    @Length(6, 100, { message: 'La contraseña debe tener entre 6 y 100 caracteres' })
-    @Exclude({ toPlainOnly: true })
-    password: string;
+@Column()
+@IsNotEmpty({ message: 'La contraseña es requerida' })
+@Length(6, 100, { message: 'La contraseña debe tener entre 6 y 100 caracteres' })
+@Exclude({ toPlainOnly: true })
+password: string;
 
     @ManyToOne(() => Rol, rol => rol.id, { eager: true })
     rol: Rol;

@@ -8,8 +8,8 @@ export class Jclub {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
-    nombre: string;
+@Column()
+nombre: string;
 
     @ManyToOne(() => Municipio, municipio => municipio.id)
     municipio: Municipio

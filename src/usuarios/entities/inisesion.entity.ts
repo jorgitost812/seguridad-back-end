@@ -5,8 +5,8 @@ export class iniSesion {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  email: string;
+@Column()
+email: string;
 
   @CreateDateColumn()
   createdAt: Date;

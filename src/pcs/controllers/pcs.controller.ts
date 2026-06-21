@@ -35,7 +35,7 @@ export class PcController {
     
     @Post()
     @UseGuards(JwtAuthGuard, JcGuard, RolesGuard)
-    @Roles('AdministradorJC', 'Técnico')
+    @Roles('AdministradorJC', 'Técnico', 'Supervisor')
     async create(@Body() body: any, @Req() req){
         console.log('=== PC CONTROLLER - CREATE ===');
         console.log('req.user:', req.user);
@@ -59,7 +59,7 @@ export class PcController {
     
     @Put(':id')
     @UseGuards(JwtAuthGuard, JcGuard, RolesGuard)
-    @Roles('AdministradorJC', 'Técnico')
+    @Roles('AdministradorJC', 'Técnico', 'Supervisor')
     async update(@Param('id') id: number, @Body() body: any, @Req() req){
         console.log('=== PC CONTROLLER - UPDATE ===');
         console.log('ID:', id);

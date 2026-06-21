@@ -5,23 +5,23 @@ export class cAccesos {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  nombrejc: string;
+@Column()
+nombrejc: string;
 
-  @Column()
-  nombrepc: string;
+@Column()
+nombrepc: string;
 
-  @Column()
-  tecnico: string;
+@Column()
+tecnico: string;
 
-  @Column()
-  supervisor: string;
+@Column()
+supervisor: string;
 
-  @Column()
-  causa: string;
+@Column()
+causa: string;
 
-  @Column()
-  inventario: string;
+@Column()
+inventario: string;
 
   @Column({ nullable: true })
   computadora_id: number;

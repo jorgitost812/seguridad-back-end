@@ -21,25 +21,17 @@ export class PcService {
      });
    }
    
-   async create(body: any, jcId?: number, user?: any, trazasService?: any){
-    console.log('=== PC SERVICE - CREATE ===');
-    console.log('user recibido:', user);
-    
-    let newPC = {
-        nombre: body.nombre,
-        numero: body.numero,
-        ip: body.ip,
-        jc: { id: jcId || body.jcId },
-        pwd: {},
-        setupPwd: {}
-    }
-    
-    if (body.admin && body.admin !== '') {
-        newPC.pwd = encrypt(body.admin);
-    }
-    if (body.setup && body.setup !== '') {
-        newPC.setupPwd = encrypt(body.setup);
-    }
+    async create(body: any, jcId?: number, user?: any, trazasService?: any){
+     console.log('=== PC SERVICE - CREATE ===');
+     
+     let newPC = {
+         nombre: body.nombre,
+         numero: body.numero,
+         ip: body.ip,
+         jc: { id: jcId || body.jcId },
+         pwd: body.pwd || {},
+         setupPwd: body.setupPwd || {}
+     }
     
     const nuevaTarea = this.pcsRepo.create(newPC);
     const savedPC = await this.pcsRepo.save(nuevaTarea);
@@ -99,14 +91,18 @@ export class PcService {
         ip: pc.ip 
      };
 
-     if (body.admin && body.admin !== '') {
-       body.pwd = encrypt(body.admin);
-       delete body.admin;
-     }
-     if (body.setup && body.setup !== '') {
-       body.setupPwd = encrypt(body.setup);
-       delete body.setup;
-     }
+      if (body.admin && body.admin !== '') {
+        body.pwd = encrypt(body.admin);
+        delete body.admin;
+      } else if (!body.pwd) {
+        delete body.pwd;
+      }
+      if (body.setup && body.setup !== '') {
+        body.setupPwd = encrypt(body.setup);
+        delete body.setup;
+      } else if (!body.setupPwd) {
+        delete body.setupPwd;
+      }
 
      this.pcsRepo.merge(pc, body);
      const updatedPC = await this.pcsRepo.save(pc);
