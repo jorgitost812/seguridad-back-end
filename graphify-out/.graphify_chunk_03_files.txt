@@ -1,0 +1,15 @@
+D:\Proyectos\seguridad-back-end\cc-fron\static\fotousuarios\otro.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\fotousuarios\rogelio.elias.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\fotousuarios\rogelio.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\fotousuarios\ronald.puig.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\fotousuarios\sandra.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\fotousuarios\super.admin.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\fotousuarios\walter.perez.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\fotousuarios\yadelaida.rodriguez.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\fotousuarios\yoendris.reyna.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\fotousuarios\yordanis.carralero.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\fotousuarios\yordanis.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\ivan.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\logojc.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\static\v.png
+D:\Proyectos\seguridad-back-end\cc-fron\static\vuetify-logo.svg

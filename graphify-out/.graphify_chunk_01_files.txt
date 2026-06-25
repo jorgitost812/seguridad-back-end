@@ -1,0 +1,22 @@
+D:\Proyectos\seguridad-back-end\AGENTS.md
+D:\Proyectos\seguridad-back-end\README.md
+D:\Proyectos\seguridad-back-end\README.txt
+D:\Proyectos\seguridad-back-end\cc-fron\README.md
+D:\Proyectos\seguridad-back-end\cc-fron\assets\README.md
+D:\Proyectos\seguridad-back-end\cc-fron\components\README.md
+D:\Proyectos\seguridad-back-end\cc-fron\layouts\README.md
+D:\Proyectos\seguridad-back-end\cc-fron\middleware\README.md
+D:\Proyectos\seguridad-back-end\cc-fron\pages\README.md
+D:\Proyectos\seguridad-back-end\cc-fron\plugins\README.md
+D:\Proyectos\seguridad-back-end\cc-fron\static\README.md
+D:\Proyectos\seguridad-back-end\cc-fron\static\imagen camino.txt
+D:\Proyectos\seguridad-back-end\cc-fron\store\README.md
+D:\Proyectos\seguridad-back-end\src\accesos\rep1.html
+D:\Proyectos\seguridad-back-end\cc-fron\assets\candadooff.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\assets\candadoon.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\assets\eliceo.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\assets\fondoCerradura.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\assets\fondoCerradura1.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\assets\fondopc.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\assets\ivan.jpg
+D:\Proyectos\seguridad-back-end\cc-fron\assets\logojc.jpg

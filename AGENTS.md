@@ -1,6 +1,6 @@
 # Seguridad Back-End
 
-NestJS backend for security/management system.
+NestJS backend for security/management system. Monorepo with `cc-fron/` Nuxt 2 frontend (separate project, runs on port 8080).
 
 ## Stack
 
@@ -8,8 +8,8 @@ NestJS backend for security/management system.
 - **Language:** TypeScript 5.8
 - **ORM:** TypeORM 0.3
 - **DB:** PostgreSQL (local, `seguridad` database)
-- **Auth:** Passport + JWT
-- **API Docs:** Swagger
+- **Auth:** Passport + JWT (strategy in `auth/jwt.strategy.ts`)
+- **API Docs:** Swagger at `/api` with BearerAuth
 - **Email:** @nestjs-modules/mailer + nodemailer
 - **PDF:** @t00nday/nestjs-pdf + jspdf
 - **Template engines:** EJS, Pug, Handlebars
@@ -18,7 +18,7 @@ NestJS backend for security/management system.
 
 ```bash
 pnpm install          # install deps
-pnpm run start:dev    # dev mode with watch
+pnpm run start:dev    # dev mode with watch (port 3000)
 pnpm run build        # build to dist/
 pnpm run start:prod   # run production build
 pnpm run lint         # eslint fix
@@ -41,7 +41,7 @@ src/
 ├── jcs/            # Joven Club entities
 ├── pcs/            # PC entities + access
 ├── dashboard/      # Dashboard endpoints
-├── mail/           # Email service
+├── mail/           # Email service (templates in mail/templates/)
 ├── pdf/            # PDF generation
 ├── helpers/        # Utility functions
 ├── database/       # DB config/migrations
@@ -59,6 +59,15 @@ src/
 - Roles: `@Roles()` decorator + `RolesGuard`
 - TypeORM sync: `synchronize: true` (dev only)
 
+## Auth Flow
+
+- `passport-local` strategy for login, returns JWT token
+- `passport-jwt` strategy validates token, returns `{userId, email, rol, jcId}`
+- `RolesGuard` checks `user.rol.nombre` against required roles
+- `JcGuard` ensures user has a `jcId`, sets `request.userJcId`
+- Passwords hashed via `bcrypt` in `@BeforeInsert` / `@BeforeUpdate` hooks on `Usuario` entity
+- JWT expires in 6h
+
 ## Environment
 
 `.env` at root:
@@ -71,9 +80,15 @@ DB_DATABASE=seguridad
 JWT_SECRET=...
 ```
 
-## Notes
+**Note:** `src/.env` is a duplicate of root `.env` — both exist and both are tracked. The `auth/constants.ts` hardcodes the same JWT secret. ConfigModule not used yet.
 
-- DB credentials hardcoded in `app.module.ts` — migrate to ConfigModule
+## Key Gotchas
+
+- DB credentials hardcoded in `app.module.ts`, `data-source.ts`, `src/.env`, and root `.env` — four places to update
 - `synchronize: true` dangerous in production
 - Both `pnpm-lock.yaml` and `yarn.lock` exist — standardize on one
-- `strictNullChecks: false` in tsconfig — loose typing
+- `strictNullChecks: false`, `noImplicitAny: false` in tsconfig — loose typing
+- `dist/` directory is tracked in git (should be in `.gitignore`)
+- `mail/templates/` copied to `dist/` via `nest-cli.json` assets config
+- SQL scripts at root: `check-users.sql`, `fix-nulls.sql`, `seed-users.sql`
+- CORS enabled for `http://localhost:8080` (the Nuxt frontend)
