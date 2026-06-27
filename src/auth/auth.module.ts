@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
@@ -11,6 +12,7 @@ import { iniSesionModule } from '../usuarios/inisesion.module';
 
 @Module({
   imports: [
+    ConfigModule,
     UsuariosModule,
     PassportModule,
     iniSesionModule,
@@ -19,7 +21,11 @@ import { iniSesionModule } from '../usuarios/inisesion.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
+<<<<<<< HEAD
         signOptions: { expiresIn: '6h' },
+=======
+        signOptions: { expiresIn: configService.get<string>('JWT_EXPIRATION') || '6h' },
+>>>>>>> master
       }),
     }),
   ],

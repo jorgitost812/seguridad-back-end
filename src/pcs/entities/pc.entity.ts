@@ -1,35 +1,44 @@
 import { Acceso } from 'src/accesos/entities/accesos.entity';
 import { Jclub } from 'src/jcs/entities/jc.entity';
+import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, JoinColumn, OneToMany, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, JoinColumn, OneToMany} from 'typeorm';
+@Entity('computadora')
+@Index(['jc_id'])
+@Index(['nombre'])
+@Index(['ip'], { unique: true })
+export class Computadora {
 
-@Entity()
-export class Computadora{
+    @PrimaryGeneratedColumn()
+    id: number;
 
-@PrimaryGeneratedColumn()
-id: number;
+    @Column({ type: 'varchar', length: 100 })
+    nombre: string;
 
-@Column()
-nombre: string;
+    @Column({ type: 'varchar', length: 50 })
+    numero: string;
 
-@Column()
-numero: string;
+    @Column({ type: 'varchar', length: 15, unique: true })
+    ip: string;
 
-@Column()
-ip: string;
+    @Column('json', { nullable: true })
+    pwd: object;
 
-@Column('json', {nullable: true})
-pwd: object;
+    @Column('json', { nullable: true })
+    setupPwd: object;
 
-@Column('json', {nullable: true})
-setupPwd: object;
+    @ManyToOne(() => Jclub, jc => jc.computadoras, { nullable: false })
+    @JoinColumn({ name: 'jc_id' })
+    jc: Jclub;
 
-@ManyToOne(() => Jclub, jc => jc.computadoras) // Debe apuntar a la propiedad en Jclub
-@JoinColumn({ name: 'jc_id' })
-jc: Jclub;
+    @OneToMany(() => Acceso, acceso => acceso.pc, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
+    accesos: Acceso[];
 
-@OneToMany(() => Acceso, acceso => acceso.pc, {
-    onDelete: 'CASCADE' // Esto eliminará automáticamente los accesos relacionados
-  })
-  accesos: Acceso[];
+    @CreateDateColumn({ type: 'timestamp with time zone' })
+    createdAt: Date;
+
+    @UpdateDateColumn({ type: 'timestamp with time zone' })
+    updatedAt: Date;
 }
