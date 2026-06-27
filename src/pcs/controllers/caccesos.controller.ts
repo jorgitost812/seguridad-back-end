@@ -54,7 +54,11 @@ export class cAccesosController {
     @UseGuards(JwtAuthGuard)
     @Get('by/:json')
     async getBy(@Param('json') json: string):Promise<cAccesos[]>{
-        return await this.caccesosService.findBy(JSON.parse(json));
+        try {
+            return await this.caccesosService.findBy(JSON.parse(json));
+        } catch {
+            throw new BadRequestException('JSON inválido');
+        }
     }
 
 
@@ -74,8 +78,13 @@ async create(@Body() createAccesoDto: CreateAccesoDto) {
     @UseGuards(JwtAuthGuard)
     @Get('/export/pdf/:json')
     async getPDF(@Param('json') json: string, @Res() res: Response): Promise<void> {
-        //routes.get('/pdf', FileController.show);
-        const pdfStream = await this.caccesosService.generatePDF(JSON.parse(json));
+        let filtro;
+        try {
+            filtro = JSON.parse(json);
+        } catch {
+            throw new BadRequestException('JSON inválido');
+        }
+        const pdfStream = await this.caccesosService.generatePDF(filtro);
         res.writeHead(200, {
             'Content-Length': Buffer.byteLength(pdfStream),
             'Content-Type': 'application/pdf',
@@ -86,9 +95,13 @@ async create(@Body() createAccesoDto: CreateAccesoDto) {
     @UseGuards(JwtAuthGuard)
     @Get('/export/pdfbydaterange/:json')
     async getPDFByRange(@Param('json') json: string, @Res() res: Response): Promise<void> {
-        //routes.get('/pdf', FileController.show);
-        //console.log(json);
-        const pdfStream = await this.caccesosService.generatePDFByRange(JSON.parse(json));
+        let filtro;
+        try {
+            filtro = JSON.parse(json);
+        } catch {
+            throw new BadRequestException('JSON inválido');
+        }
+        const pdfStream = await this.caccesosService.generatePDFByRange(filtro);
         res.writeHead(200, {
             'Content-Length': Buffer.byteLength(pdfStream),
             'Content-Type': 'application/pdf',

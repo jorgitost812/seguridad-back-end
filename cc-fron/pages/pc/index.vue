@@ -148,9 +148,10 @@
     </template>
     <template v-slot:item.actions="{ item }">
       <v-icon small fab @click="irDetalles(item)"> mdi-eye </v-icon>
-      <!-- Permitir editar/eliminar/trasladar para Administrador (1), AdministradorJC (5) y Técnico (7) -->
+      <!-- Editar: Administrador (1), AdministradorJC (5), Técnico (7) -->
       <v-icon v-if="user.rol.id === 1 || user.rol.id === 5 || user.rol.id === 7" small fab @click="editItem(item)"> mdi-pencil </v-icon>
-      <v-icon v-if="user.rol.id === 1 || user.rol.id === 5 || user.rol.id === 7" small fab @click="deleteItem(item)"> mdi-delete </v-icon>
+      <!-- Eliminar: solo Administrador (1) y AdministradorJC (5) — Técnico NO elimina -->
+      <v-icon v-if="user.rol.id === 1 || user.rol.id === 5" small fab @click="deleteItem(item)"> mdi-delete </v-icon>
       <v-icon v-if="user.rol.id === 1 || user.rol.id === 5" small fab @click="trasladoItem(item)"> mdi-camera-switch </v-icon>
     </template>
   </v-data-table>

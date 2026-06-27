@@ -35,7 +35,6 @@
   
         <template v-slot:item.actions="{ item }">
           <v-icon small class="mr-2" @click="editarComputadora(item)">mdi-pencil</v-icon>
-          <v-icon small @click="eliminarComputadora(item)">mdi-delete</v-icon>
         </template>
   
         <template v-slot:no-data>
@@ -99,21 +98,6 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
-  
-      <!-- Diálogo de confirmación de eliminación -->
-      <v-dialog v-model="dialogEliminar" max-width="400px">
-        <v-card>
-          <v-card-title class="text-h5">¿Estás seguro?</v-card-title>
-          <v-card-text>
-            ¿Deseas eliminar la computadora <strong>{{ computadoraAEliminar?.nombre }}</strong>?
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="dialogEliminar = false">Cancelar</v-btn>
-            <v-btn color="red darken-1" text @click="confirmarEliminar">Eliminar</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
     </div>
   </template>
   
@@ -127,10 +111,8 @@
       cargando: false,
       computadoras: [],
       dialog: false,
-      dialogEliminar: false,
       dialogTitulo: '',
       editandoId: null,
-      computadoraAEliminar: null,
       formComputadora: {
         numero: '',
         nombre: '',
@@ -214,12 +196,7 @@
         };
         this.dialog = true;
       },
-  
-      eliminarComputadora(item) {
-        this.computadoraAEliminar = item;
-        this.dialogEliminar = true;
-      },
-  
+
       async guardarComputadora() {
         if (!this.formComputadora.nombre || !this.formComputadora.numero) {
           this.$store.commit('alert/setAlert', {
@@ -270,27 +247,7 @@
           });
         }
       },
-  
-      async confirmarEliminar() {
-        try {
-          await this.$axios.delete(`api/pcs/${this.computadoraAEliminar.id}`);
-          this.$store.commit('alert/setAlert', {
-            status: true,
-            message: 'Computadora eliminada correctamente',
-            color: 'success'
-          });
-          this.dialogEliminar = false;
-          await this.cargarComputadoras();
-        } catch (error) {
-          console.error('Error eliminando computadora:', error);
-          this.$store.commit('alert/setAlert', {
-            status: true,
-            message: `Error al eliminar: ${error.response?.data?.message || error.message}`,
-            color: 'error'
-          });
-        }
-      },
-  
+
       cerrarDialog() {
         this.dialog = false;
         this.formComputadora = {

@@ -1,8 +1,6 @@
 import { Get, Injectable, InternalServerErrorException, Logger, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { logger } from 'handlebars';
-import { json } from 'stream/consumers';
-import { getRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { cAccesos } from '../entities/caccesos.entity';
 import { CreateAccesoDto } from '../dto/create-accesos.dto';
@@ -60,73 +58,38 @@ export class cAccesosService {
   }
 
   findBy(filtro) {
-    console.log('find2');
-    var query = "";
-    if (filtro.nombrejc) {
-      if (query !== "")
-        query += ",";
-      query += "caccesos.nombrejc = '" + filtro.nombrejc + "'";
-    }
-    if (filtro.nombrepc) {
-      if (query !== "")
-        query += " and ";
-      query += "caccesos.nombrepc = '" + filtro.nombrepc + "'";
-    }
-    if (filtro.causa) {
-      if (query !== "")
-        query += " and ";
-      query += "caccesos.causa = '" + filtro.causa + "'";
-    } if (filtro.supervisor) {
-      if (query !== "")
-        query += " and ";
-      query += "caccesos.supervisor = '" + filtro.supervisor + "'";
-    } if (filtro.tecnico) {
-      if (query !== "")
-        query += " and ";
-      query += "caccesos.tecnico = '" + filtro.tecnico + "'";
-    } if (filtro.admin) {
-      if (query !== "")
-        query += " and ";
-      query += "caccesos.admin = '" + filtro.admin + "'";
+    const qb = this.caccesosRepo.createQueryBuilder('caccesos');
+    const conditions = [
+      { key: 'nombrejc', field: 'caccesos.nombrejc' },
+      { key: 'nombrepc', field: 'caccesos.nombrepc' },
+      { key: 'causa', field: 'caccesos.causa' },
+      { key: 'supervisor', field: 'caccesos.supervisor' },
+      { key: 'tecnico', field: 'caccesos.tecnico' },
+      { key: 'admin', field: 'caccesos.admin' },
+    ];
+
+    let first = true;
+    for (const { key, field } of conditions) {
+      if (filtro[key]) {
+        if (first) {
+          qb.where(`${field} = :${key}`, { [key]: filtro[key] });
+          first = false;
+        } else {
+          qb.andWhere(`${field} = :${key}`, { [key]: filtro[key] });
+        }
+      }
     }
 
-    //return query;
-
-    return getRepository(cAccesos).createQueryBuilder().select("caccesos").from(cAccesos, "caccesos").where(query).getMany();
-
-    /*var json = {"causa":"",
-       "nombrejc":"nombrejc",
-       "nombrepc":"nombrepc",
-       "supervisor":"",
-       "tecnico":"",
-       "admin":""};
-    var query = "";
-    if(json.causa)
-    query+="{ where: { nombrejc: " + json.nombrepc + "}}";
-    return this.caccesosRepo.find(query);
-    //return this.caccesosRepo.find({ where: { nombrejc: nombrejc}} && { where: { nombrepc: nombrepc}});*/
+    return qb.getMany();
   }
 
   findByRange(filtro) {
-    console.log('find3');
-    var query = "caccesos.createdAt between " + "'" + filtro.desde + "'" + " and " + "'" + filtro.hasta + "'" + "";
-
-    //return query;
-    //Logger.log(query);
-
-    return getRepository(cAccesos).createQueryBuilder().select("caccesos").from(cAccesos, "caccesos").where(query).getMany();
-
-    /*var json = {"causa":"",
-       "nombrejc":"nombrejc",
-       "nombrepc":"nombrepc",
-       "supervisor":"",
-       "tecnico":"",
-       "admin":""};
-    var query = "";
-    if(json.causa)
-    query+="{ where: { nombrejc: " + json.nombrepc + "}}";
-    return this.caccesosRepo.find(query);
-    //return this.caccesosRepo.find({ where: { nombrejc: nombrejc}} && { where: { nombrepc: nombrepc}});*/
+    return this.caccesosRepo.createQueryBuilder('caccesos')
+      .where('caccesos.createdAt BETWEEN :desde AND :hasta', {
+        desde: filtro.desde,
+        hasta: filtro.hasta,
+      })
+      .getMany();
   }
 
 
@@ -395,46 +358,13 @@ export class cAccesosService {
   }
 
 
-  //Este es de juan m de prueba
   findByTest(filtro) {
-    var query = "caccesos.createdAt >= '" + filtro.desde + "' and caccesos.createdAt <= '" + filtro.hasta + "'";
-    /* if(filtro.nombrejc)
-     {
-        if(query !== "")
-           query += ",";
-        query += "caccesos.nombrejc = '" + filtro.nombrejc+"'";
-     }
-     if(filtro.nombrepc)
-     {
-        if(query !== "")
-        query += " and ";
-        query += "caccesos.nombrepc = '" + filtro.nombrepc+"'";
-     }
-     if(filtro.causa)
-     {
-        if(query !== "")
-        query += " and ";
-        query += "caccesos.causa = '" + filtro.causa+"'";
-     }if(filtro.supervisor)
-     {
-        if(query !== "")
-        query += " and ";
-        query += "caccesos.supervisor = '" + filtro.supervisor+"'";
-     }if(filtro.tecnico)
-     {
-        if(query !== "")
-        query += " and ";
-        query += "caccesos.tecnico = '" + filtro.tecnico+"'";
-     }if(filtro.admin)
-     {
-        if(query !== "")
-        query += " and ";
-        query += "caccesos.admin = '" + filtro.admin+"'";
-     }*/
-
-    //return query;
-
-    return getRepository(cAccesos).createQueryBuilder().select("caccesos").from(cAccesos, "caccesos").where(query).getMany();
+    return this.caccesosRepo.createQueryBuilder('caccesos')
+      .where('caccesos.createdAt >= :desde AND caccesos.createdAt <= :hasta', {
+        desde: filtro.desde,
+        hasta: filtro.hasta,
+      })
+      .getMany();
   }
 
 }

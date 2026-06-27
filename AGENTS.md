@@ -17,13 +17,13 @@ NestJS backend for security/management system. Monorepo with `cc-fron/` Nuxt 2 f
 ## Commands
 
 ```bash
-pnpm install          # install deps
-pnpm run start:dev    # dev mode with watch (port 3000)
-pnpm run build        # build to dist/
-pnpm run start:prod   # run production build
-pnpm run lint         # eslint fix
-pnpm run test         # unit tests
-pnpm run test:e2e     # e2e tests
+yarn install          # install deps
+yarn start:dev        # dev mode with watch (port 3000)
+yarn build            # build to dist/
+yarn start:prod       # run production build
+yarn lint             # eslint fix
+yarn test             # unit tests
+yarn test:e2e         # e2e tests
 ```
 
 ## Project Structure
@@ -86,7 +86,6 @@ JWT_SECRET=...
 
 - DB credentials hardcoded in `app.module.ts`, `data-source.ts`, `src/.env`, and root `.env` — four places to update
 - `synchronize: true` dangerous in production
-- Both `pnpm-lock.yaml` and `yarn.lock` exist — standardize on one
 - `strictNullChecks: false`, `noImplicitAny: false` in tsconfig — loose typing
 - `dist/` directory is tracked in git (should be in `.gitignore`)
 - `mail/templates/` copied to `dist/` via `nest-cli.json` assets config

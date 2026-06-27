@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { ProvinciasModule } from './provincias/provincias.module';
 import { RolesModule } from './roles/roles.module';
@@ -17,15 +19,20 @@ import { TrazasModule } from './trazas/trazas.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'admin',
-      database: 'seguridad',
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT, 10) || 5432,
+      username: process.env.DB_USERNAME || 'postgres',
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE || 'seguridad',
       entities: ['dist/**/*.entity{.ts,.js}'],
-      synchronize: true,
+      synchronize: process.env.DB_SYNCHRONIZE === 'true',
       migrationsRun: true,
       retryDelay: 3000,
       retryAttempts: 10

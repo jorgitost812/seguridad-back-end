@@ -1,4 +1,5 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Post, UseGuards } from "@nestjs/common";
+import { ThrottlerGuard } from "@nestjs/throttler";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { SETTINGS } from "src/app.utils";
@@ -14,21 +15,18 @@ export class AuthController {
     ) {}
 
     @Post('login')
+    @UseGuards(ThrottlerGuard)
     @ApiOperation({ summary: 'Login user' })
     @ApiResponse({ status: 200, description: 'Login successful' })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     async login(@Body(SETTINGS.VALIDATION_PIPE) loginUserDto: LoginUserDto) {
-        console.log('Login request received for:', loginUserDto.email);
         try {
             const result = await this.authService.login(loginUserDto);
-            // Register login trace
             await this.iniSesionService.create({
                 email: loginUserDto.email
             });
-            console.log('Login successful');
             return result;
         } catch (error) {
-            console.error('Login controller error:', error);
             throw error;
         }
     }

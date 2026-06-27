@@ -1,9 +1,8 @@
 const crypto = require('crypto');
 
 const algorithm = 'aes-256-ctr';
-const secretKey = 'w4or7qPIotUAKWO2vWBzxm6aqsIWYZox';
 
-export { secretKey };
+const getKey = () => process.env.CRYPTO_KEY;
 
 export const encrypt = (text: string) => {
   if (!text || text === '') {
@@ -11,7 +10,7 @@ export const encrypt = (text: string) => {
   }
   
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
+  const cipher = crypto.createCipheriv(algorithm, getKey(), iv);
   const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
   
   return {
@@ -25,7 +24,7 @@ export const decrypt = (hash: any) => {
     return '';
   }
   
-  const decipher = crypto.createDecipheriv(algorithm, secretKey, Buffer.from(hash.iv, 'hex'));
+  const decipher = crypto.createDecipheriv(algorithm, getKey(), Buffer.from(hash.iv, 'hex'));
   const decrpyted = Buffer.concat([decipher.update(Buffer.from(hash.content, 'hex')), decipher.final()]);
   return decrpyted.toString();
 };

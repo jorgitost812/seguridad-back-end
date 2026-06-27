@@ -13,13 +13,9 @@ export class AuthService {
 
     async validateUser(email: string, password: string): Promise<any> {
         const user = await this.usersService.findByEmail(email);
-        console.log('Found user:', user ? 'Yes' : 'No');
         
         if (user) {
-          console.log('Stored hashed password:', user.password);
-          console.log('Attempting to validate password:', password);
           const isValid = await bcrypt.compare(password, user.password);
-          console.log('Password validation result:', isValid);
           
           if (isValid) {
             const { password, ...result } = user;
@@ -30,7 +26,6 @@ export class AuthService {
     }
 
     async login(loginUserDto: LoginUserDto) {
-        console.log('Login attempt for:', loginUserDto.email);
         try {
             const user = await this.validateUser(loginUserDto.email, loginUserDto.password);
             
@@ -45,7 +40,6 @@ export class AuthService {
                 jcId: user.jc?.id
             };
 
-            // Modificado para incluir más información del usuario
             return {
                 statusCode: 200,
                 access_token: this.jwtService.sign(payload),
@@ -59,7 +53,6 @@ export class AuthService {
                 }
             };
         } catch (error) {
-            console.error('Login error:', error);
             throw new UnauthorizedException('Credenciales inválidas');
         }
     }

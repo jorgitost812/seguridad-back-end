@@ -3,9 +3,12 @@ import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { useContainer } from 'class-validator';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(helmet());
 
   // Add global ClassSerializerInterceptor
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get('Reflector')));
@@ -32,7 +35,7 @@ async function bootstrap() {
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.enableCors({
-    origin: 'http://localhost:8080',
+    origin: process.env.CORS_ORIGIN || 'http://localhost:8080',
     credentials: true,
   });
   await app.listen(3000);
