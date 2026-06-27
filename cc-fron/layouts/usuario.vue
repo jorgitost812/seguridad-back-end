@@ -3,7 +3,7 @@
       <v-app-bar color="primary" dark fixed app>
         <v-toolbar-title>Control contraseñas de las PC</v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-list-item-title>{{ user.nombre }} {{ user.apellidos }} ({{ user.rol.nombre }})</v-list-item-title>
+        <v-list-item-title>{{ user.nombre }} {{ user.apellidos }} ({{ user.rol?.nombre }})</v-list-item-title>
         <v-btn small class="ml-2" icon @click="Salir">
           <v-icon>mdi-logout</v-icon>
         </v-btn>

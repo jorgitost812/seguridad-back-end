@@ -35,7 +35,7 @@ export default {
       return
     }
     
-    const rolNombre = user.rol.nombre
+    const rolNombre = user.rol?.nombre
     console.log('Rol detectado:', rolNombre)
     
     // Redirección según el rol
