@@ -1,19 +1,18 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Traza } from './entities/traza.entity';
 
 @Injectable()
 export class TrazasService {
-  private readonly logger = new Logger(TrazasService.name);
-
   constructor(
     @InjectRepository(Traza)
     private trazasRepo: Repository<Traza>,
   ) {}
 
   async create(data: Partial<Traza>): Promise<Traza> {
-    this.logger.debug(`Creating audit trace: action=${data.accion}, entity=${data.entidad}`);
+    console.log('=== TRAZAS SERVICE - CREATE ===');
+    console.log('Datos recibidos:', JSON.stringify(data, null, 2));
     
     // Crear la traza explícitamente con cada campo
     const traza = new Traza();
@@ -27,8 +26,17 @@ export class TrazasService {
     traza.detalles = data.detalles || {};
     traza.fecha = new Date();
     
+    console.log('Traza a guardar:', {
+      usuarioEmail: traza.usuarioEmail,
+      usuarioRol: traza.usuarioRol,
+      accion: traza.accion,
+      entidad: traza.entidad,
+      entidadNombre: traza.entidadNombre,
+      jcId: traza.jcId
+    });
+    
     const savedTraza = await this.trazasRepo.save(traza);
-    this.logger.log(`Audit trace saved: id=${savedTraza.id}, action=${traza.accion}`);
+    console.log('✅ Traza guardada con ID:', savedTraza.id);
     
     return savedTraza;
   }
@@ -56,7 +64,7 @@ export class TrazasService {
     }
 
     const results = await query.getMany();
-    this.logger.debug(`Found ${results.length} audit traces`);
+    console.log(`📊 Se encontraron ${results.length} trazas`);
     return results;
   }
 

@@ -1,16 +1,12 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BaseEntity, Unique, Index, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BaseEntity, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { Length, IsEmail, IsNotEmpty } from 'class-validator';
 import { Exclude, plainToClass } from 'class-transformer';
+import * as bcrypt from 'bcrypt';
 import { Rol } from '../../roles/entities/role.entity';
 import { Jclub } from '../../jcs/entities/jc.entity';
 
 @Entity('usuario')
 @Unique(['email'])
-@Index(['email'])
-@Index(['rol_id'])
-@Index(['jc_id'])
-@Index(['activo'])
-@Index(['createdAt'])
 export class Usuario extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
@@ -23,17 +19,10 @@ nombre: string;
 @IsNotEmpty({ message: 'Los apellidos son requeridos' })
 apellidos: string;
 
-<<<<<<< HEAD
 @Column({ unique: true })
 @IsEmail({}, { message: 'Email inválido' })
 @IsNotEmpty({ message: 'El email es requerido' })
 email: string;
-=======
-    @Column({ unique: true, type: 'varchar' })
-    @IsEmail({}, { message: 'Email inválido' })
-    @IsNotEmpty({ message: 'El email es requerido' })
-    email: string;
->>>>>>> master
 
 @Column()
 @IsNotEmpty({ message: 'La contraseña es requerida' })
@@ -41,12 +30,10 @@ email: string;
 @Exclude({ toPlainOnly: true })
 password: string;
 
-    @ManyToOne(() => Rol, rol => rol.usuarios, { nullable: false })
-    @JoinColumn({ name: 'rol_id' })
+    @ManyToOne(() => Rol, rol => rol.id, { eager: true })
     rol: Rol;
 
-    @ManyToOne(() => Jclub, jc => jc.usuarios, { nullable: true })
-    @JoinColumn({ name: 'jc_id' })
+    @ManyToOne(() => Jclub, jc => jc.id, { eager: true })
     jc: Jclub;
 
     @Column({ default: false })
@@ -55,11 +42,27 @@ password: string;
     @Column({ type: 'boolean', default: true })
     activo: boolean;
 
-    @CreateDateColumn({ type: 'timestamp with time zone' })
+    @CreateDateColumn()
     createdAt: Date;
 
-    @UpdateDateColumn({ type: 'timestamp with time zone' })
+    @UpdateDateColumn()
     updatedAt: Date;
+
+    @BeforeInsert()
+  async hashPasswordInsert(): Promise<void> {
+    if (this.password) {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    }
+  }
+
+    @BeforeUpdate()
+  async hashPasswordUpdate(): Promise<void> {
+    if (this.password && !this.password.startsWith('$2b$')) {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    }
+  }
 
     toString(): string {
         return this.email;
@@ -70,7 +73,6 @@ password: string;
     }
 
     async checkIfUnencryptedPasswordIsValid(unencryptedPassword: string): Promise<boolean> {
-        const bcrypt = await import('bcrypt');
         return bcrypt.compare(unencryptedPassword, this.password);
     }
 }
