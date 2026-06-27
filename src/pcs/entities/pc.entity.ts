@@ -1,5 +1,5 @@
-import { Acceso } from 'src/accesos/entities/accesos.entity';
-import { Jclub } from 'src/jcs/entities/jc.entity';
+import { Acceso } from '../../accesos/entities/accesos.entity';
+import { Jclub } from '../../jcs/entities/jc.entity';
 
 import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, JoinColumn, OneToMany} from 'typeorm';
 

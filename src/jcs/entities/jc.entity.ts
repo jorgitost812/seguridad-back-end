@@ -1,6 +1,6 @@
-import { Municipio } from 'src/municipios/entities/municipio.entity';
+import { Municipio } from '../../municipios/entities/municipio.entity';
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
-import { Computadora } from 'src/pcs/entities/pc.entity';
+import { Computadora } from '../../pcs/entities/pc.entity';
 
 @Entity()
 export class Jclub {

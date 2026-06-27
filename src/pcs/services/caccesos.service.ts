@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 
 import { cAccesos } from '../entities/caccesos.entity';
 import { CreateAccesoDto } from '../dto/create-accesos.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
 @Injectable()
 export class cAccesosService {

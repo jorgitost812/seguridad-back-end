@@ -21,24 +21,29 @@ export class PcService {
      });
    }
    
-    async create(body: any, jcId?: number, user?: any, trazasService?: any){
-     console.log('=== PC SERVICE - CREATE ===');
-     
-     let newPC = {
+     async create(body: any, jcId?: number, user?: any, trazasService?: any){
+     // Encrypt passwords if provided as plain text
+     let pwd = body.pwd || {};
+     let setupPwd = body.setupPwd || {};
+     if (body.admin && body.admin !== '') {
+       pwd = encrypt(body.admin);
+     }
+     if (body.setup && body.setup !== '') {
+       setupPwd = encrypt(body.setup);
+     }
+
+     const newPC = {
          nombre: body.nombre,
          numero: body.numero,
          ip: body.ip,
          jc: { id: jcId || body.jcId },
-         pwd: body.pwd || {},
-         setupPwd: body.setupPwd || {}
+         pwd,
+         setupPwd
      }
     
     const nuevaTarea = this.pcsRepo.create(newPC);
     const savedPC = await this.pcsRepo.save(nuevaTarea);
     
-    console.log('PC guardada:', savedPC);
-    
-    // Insertar traza - asegurar que los datos NO sean undefined
     if (trazasService) {
         const emailUsuario = user?.email || 'sistema';
         const rolUsuario = user?.rol || 'sistema';
@@ -60,11 +65,7 @@ export class PcService {
             }
         };
         
-        console.log('📝 Creando traza con datos:', trazaData);
         await trazasService.create(trazaData);
-        console.log('✅ Traza creada para CREATE PC');
-    } else {
-        console.log('❌ No se creó traza - trazasService no disponible');
     }
     
     return savedPC;
@@ -126,7 +127,6 @@ export class PcService {
               } 
            }
         });
-        console.log('✅ Traza creada para UPDATE PC');
      }
      
      return updatedPC;
@@ -167,7 +167,6 @@ export class PcService {
              jcId: jcId,
              detalles: pcData
           });
-          console.log('✅ Traza creada para DELETE PC');
        }
        
        return true;

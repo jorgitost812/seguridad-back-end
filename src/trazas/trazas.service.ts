@@ -11,10 +11,6 @@ export class TrazasService {
   ) {}
 
   async create(data: Partial<Traza>): Promise<Traza> {
-    console.log('=== TRAZAS SERVICE - CREATE ===');
-    console.log('Datos recibidos:', JSON.stringify(data, null, 2));
-    
-    // Crear la traza explícitamente con cada campo
     const traza = new Traza();
     traza.usuarioEmail = data.usuarioEmail || 'sistema';
     traza.usuarioRol = data.usuarioRol || 'sistema';
@@ -26,19 +22,7 @@ export class TrazasService {
     traza.detalles = data.detalles || {};
     traza.fecha = new Date();
     
-    console.log('Traza a guardar:', {
-      usuarioEmail: traza.usuarioEmail,
-      usuarioRol: traza.usuarioRol,
-      accion: traza.accion,
-      entidad: traza.entidad,
-      entidadNombre: traza.entidadNombre,
-      jcId: traza.jcId
-    });
-    
-    const savedTraza = await this.trazasRepo.save(traza);
-    console.log('✅ Traza guardada con ID:', savedTraza.id);
-    
-    return savedTraza;
+    return await this.trazasRepo.save(traza);
   }
 
   async findAll(filtros?: { jcId?: number; limit?: number; entidad?: string; accion?: string }): Promise<Traza[]> {
@@ -64,7 +48,6 @@ export class TrazasService {
     }
 
     const results = await query.getMany();
-    console.log(`📊 Se encontraron ${results.length} trazas`);
     return results;
   }
 

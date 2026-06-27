@@ -1,8 +1,10 @@
-import { BadRequestException, Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ReportesService } from '../services/accesos.service';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
 
 @Controller('api/reportes')
+@UseGuards(JwtAuthGuard)
 export class ReportesController {
   constructor(private reportesService: ReportesService) {}
 
@@ -13,7 +15,7 @@ export class ReportesController {
     return this.reportesService.getReportePC(idJovenClub);
   }
 
-  @Get('pc/:nombrejc')
+  @Get('pc-by-name/:nombrejc')
   async getAccesosByJC(@Param('nombrejc') nombrejc: string) {
     return this.reportesService.findByJC(nombrejc);
   }

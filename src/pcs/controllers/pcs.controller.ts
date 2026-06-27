@@ -6,8 +6,14 @@ import { RolesGuard } from '../../auth/roles.guard';
 import { JcGuard } from '../../auth/jc.guard';
 import { Roles } from '../../auth/roles.decorator';
 import { TrazasService } from '../../trazas/trazas.service';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CreatePcDto } from '../dto/create-pc.dto';
+import { UpdatePcDto } from '../dto/update-pc.dto';
 
 @Controller('api/pcs')
+@ApiBearerAuth()
+@ApiTags('pcs')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class PcController {
 
     constructor(
@@ -16,55 +22,39 @@ export class PcController {
     ) {}
     
     @Get('mi_jc')
-    @UseGuards(JwtAuthGuard, JcGuard)
+    @UseGuards(JcGuard)
     getComputadorasByMiJc(@Req() req){
         return this.pcService.findByJovenClub(req.user.jcId);
     }
 
     @Get()
-    @UseGuards(JwtAuthGuard)
     getAll(){
         return this.pcService.findAll();
     }
     
     @Get(':id')
-    @UseGuards(JwtAuthGuard, JcGuard)
+    @UseGuards(JcGuard)
     getOne(@Param('id') id: number, @Req() req){
         return this.pcService.findOne(id, req.user.jcId);
     }
     
     @Post()
-    @UseGuards(JwtAuthGuard, JcGuard, RolesGuard)
+    @UseGuards(JcGuard)
     @Roles('AdministradorJC', 'Técnico', 'Supervisor')
-    async create(@Body() body: any, @Req() req){
-        console.log('=== PC CONTROLLER - CREATE ===');
-        console.log('req.user:', req.user);
-        
-        body.jcId = req.user.jcId;
-        
-        // Extraer el email y rol correctamente
-        const userEmail = req.user.email;
-        const userRol = req.user.rol?.nombre || req.user.rol || 'Administrador';
-        
+    async create(@Body() createPcDto: CreatePcDto, @Req() req){
         const userForTrace = {
-            email: userEmail,
-            rol: userRol,
+            email: req.user.email,
+            rol: req.user.rol?.nombre || req.user.rol || 'Administrador',
             jcId: req.user.jcId
         };
         
-        console.log('userForTrace:', userForTrace);
-        
-        return this.pcService.create(body, req.user.jcId, userForTrace, this.trazasService);
+        return this.pcService.create(createPcDto, req.user.jcId, userForTrace, this.trazasService);
     }
     
     @Put(':id')
-    @UseGuards(JwtAuthGuard, JcGuard, RolesGuard)
+    @UseGuards(JcGuard)
     @Roles('AdministradorJC', 'Técnico', 'Supervisor')
-    async update(@Param('id') id: number, @Body() body: any, @Req() req){
-        console.log('=== PC CONTROLLER - UPDATE ===');
-        console.log('ID:', id);
-        console.log('req.user:', req.user);
-        
+    async update(@Param('id') id: number, @Body() updatePcDto: UpdatePcDto, @Req() req){
         let userRol = req.user.rol;
         if (userRol && typeof userRol === 'object' && userRol.nombre) {
             userRol = userRol.nombre;
@@ -76,17 +66,13 @@ export class PcController {
             jcId: req.user.jcId
         };
         
-        return this.pcService.update(id, body, req.user.jcId, userForTrace, this.trazasService);
+        return this.pcService.update(id, updatePcDto, req.user.jcId, userForTrace, this.trazasService);
     }
     
     @Delete(':id')
-    @UseGuards(JwtAuthGuard, JcGuard, RolesGuard)
+    @UseGuards(JcGuard)
     @Roles('AdministradorJC')
     async delete(@Param('id', ParseIntPipe) id: number, @Req() req) {
-        console.log('=== PC CONTROLLER - DELETE ===');
-        console.log('ID:', id);
-        console.log('req.user:', req.user);
-        
         let userRol = req.user.rol;
         if (userRol && typeof userRol === 'object' && userRol.nombre) {
             userRol = userRol.nombre;
@@ -102,9 +88,7 @@ export class PcController {
     }
 
     @Get('by_joven_club/:idJc')
-    @UseGuards(JwtAuthGuard)
     async getComputadorasByJovenClub(@Param('idJc', ParseIntPipe) idJc: number) {
-        console.log('=== Obteniendo PCs por JC ===');
         if (isNaN(idJc) || idJc <= 0) {
             throw new BadRequestException('ID de Joven Club inválido');
         }
@@ -112,9 +96,7 @@ export class PcController {
     }
 
     @Get('by_nombre_joven_club/:nombre_joven_club')
-    @UseGuards(JwtAuthGuard)
     async getComputadorasByNombreJovenClub(@Param('nombre_joven_club') nombre): Promise<Computadora[]>{
-        console.log('=== Obteniendo PCs por nombre de JC ===');
         return await this.pcService.findByNombreJovenClub(nombre);
     }
 }

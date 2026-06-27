@@ -5,8 +5,8 @@ import { CreateUsuarioDto } from './../dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './../dto/update-usuario.dto';
 import { Usuario } from '../entities/usuario.entity';
 import { randomInt } from 'crypto';
-import { Rol } from 'src/roles/entities/role.entity';
-import { Jclub } from 'src/jcs/entities/jc.entity';
+import { Rol } from '../../roles/entities/role.entity';
+import { Jclub } from '../../jcs/entities/jc.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -27,14 +27,12 @@ export class UsuariosService {
    }
 
    async create(createUsuarioDto: CreateUsuarioDto, user?: any, trazasService?: any) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(createUsuarioDto.password, salt);
-      
+      // Password hashing handled by @BeforeInsert hook in Usuario entity
       const usuario = this.usuariosRepo.create({
          nombre: createUsuarioDto.nombre,
          apellidos: createUsuarioDto.apellidos,
          email: createUsuarioDto.email,
-         password: hashedPassword,
+         password: createUsuarioDto.password,
          grupo_municipal: createUsuarioDto.grupo_municipal || false,
          rol: { id: createUsuarioDto.rolId } as Rol,
          jc: { id: createUsuarioDto.jcId } as Jclub,
@@ -59,7 +57,6 @@ export class UsuariosService {
                grupo_municipal: savedUser.grupo_municipal
             }
          });
-         console.log('✅ Traza creada para CREATE Usuario');
       }
       
       return savedUser;
@@ -137,7 +134,6 @@ export class UsuariosService {
                jcId: updatedUser.jc?.id
             }}
          });
-         console.log('✅ Traza creada para UPDATE Usuario');
       }
       
       return updatedUser;
@@ -174,7 +170,6 @@ export class UsuariosService {
             jcId: userData.jcId,
             detalles: userData
          });
-         console.log('✅ Traza creada para DELETE Usuario');
       }
       
       return true;
@@ -206,29 +201,29 @@ export class UsuariosService {
    }
 
    generatePassword(length: number): string {
-      var password = "";
-      var lowCaseLetters = "abcdefghijklmnopqrstuvwxyz";
-      var upperCaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      var rareLetters = "áéíóúñüÁÉÍÓÚÑÜ";
-      var digits = "0123456789";
-      var signs = ",.;:/*+-_ ";
-      var allSymbols = lowCaseLetters + upperCaseLetters + rareLetters + digits + signs;
+      const lowCaseLetters = "abcdefghijklmnopqrstuvwxyz";
+      const upperCaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const rareLetters = "áéíóúñüÁÉÍÓÚÑÜ";
+      const digits = "0123456789";
+      const signs = ",.;:/*+-_ ";
+      const allSymbols = lowCaseLetters + upperCaseLetters + rareLetters + digits + signs;
       
-      var lowLetter = lowCaseLetters[randomInt(0, lowCaseLetters.length)];
-      var upperLetter = upperCaseLetters[randomInt(0, upperCaseLetters.length)];
-      var rareLetter = rareLetters[randomInt(0, rareLetters.length)];
-      var digit = digits[randomInt(0, digits.length)];
-      var sign = signs[randomInt(0, signs.length)];
-      var forced = allSymbols[randomInt(0, allSymbols.length)];
-      var rest = "";
+      const lowLetter = lowCaseLetters[randomInt(0, lowCaseLetters.length)];
+      const upperLetter = upperCaseLetters[randomInt(0, upperCaseLetters.length)];
+      const rareLetter = rareLetters[randomInt(0, rareLetters.length)];
+      const digit = digits[randomInt(0, digits.length)];
+      const sign = signs[randomInt(0, signs.length)];
+      const forced = allSymbols[randomInt(0, allSymbols.length)];
+      let rest = "";
       
-      for(var i = 0; i < length - 6; i++)
+      for(let i = 0; i < length - 6; i++)
          rest += allSymbols[randomInt(0, allSymbols.length)];
          
-      var aux = lowLetter + upperLetter + rareLetter + digit + sign + forced + rest;
+      let aux = lowLetter + upperLetter + rareLetter + digit + sign + forced + rest;
+      let password = "";
       
       while(aux.length > 0) {
-         var index = aux.length > 1 ? randomInt(0, aux.length - 1) : 0;
+         const index = aux.length > 1 ? randomInt(0, aux.length - 1) : 0;
          password += aux[index];
          aux = aux.substring(0, index) + aux.substring(index + 1, aux.length);
       }

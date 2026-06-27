@@ -2,47 +2,42 @@ import { Controller, Get, Param, Post, Body, Put, Delete, UseGuards, ParseIntPip
 import { MunicipiosService } from '../services/municipios.service';
 import {Municipio} from './../entities/municipio.entity';
 import { JwtAuthGuard } from "../../auth/jwt-auth.guard";
+import { RolesGuard } from '../../auth/roles.guard';
+import { Roles } from '../../auth/roles.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CreateMunicipioDto } from '../dto/create-municipio.dto';
+import { UpdateMunicipioDto } from '../dto/update-municipio.dto';
 
 @Controller('api/municipios')
+@ApiBearerAuth()
+@ApiTags('municipios')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class MunicipiosController {
 
     constructor(
        private municipiosService: MunicipiosService 
     ) {}
-    @UseGuards(JwtAuthGuard)
     @Get()
     getAll(){
         return this.municipiosService.findAll();
-        //return [1,2,3,4];
     }
-    @UseGuards(JwtAuthGuard)
     @Get('by_provincia/:id')
-  async findByProvincia(@Param('id') provinciaId: number) {
-    return this.municipiosService.findByProvincia(provinciaId);
-  }
-    @UseGuards(JwtAuthGuard)
+    async findByProvincia(@Param('id') provinciaId: number) {
+        return this.municipiosService.findByProvincia(provinciaId);
+    }
     @Post()
-    create(@Body() body: any){
-        return this.municipiosService.create(body); 
-       
+    @Roles('Administrador', 'AdministradorProv')
+    create(@Body() createMunicipioDto: CreateMunicipioDto){
+        return this.municipiosService.create(createMunicipioDto); 
     }
-    @UseGuards(JwtAuthGuard)
     @Put(':id')
-    update(@Param('id') id: number, @Body() body: any){
-        return this.municipiosService.update(id, body);
-      
+    @Roles('Administrador', 'AdministradorProv')
+    update(@Param('id') id: number, @Body() updateMunicipioDto: UpdateMunicipioDto){
+        return this.municipiosService.update(id, updateMunicipioDto);
     }
-    @UseGuards(JwtAuthGuard)
     @Delete(':id')
+    @Roles('Administrador')
     delete(@Param('id') id: number){
         return this.municipiosService.delete(id);
-        
     }
-    @UseGuards(JwtAuthGuard)
-    @Get('by-provincia/:idProvincia')
-async getMunicipiosByProvincia(
-  @Param('idProvincia', ParseIntPipe) idProvincia: number // Asegura tipo número
-) {
-  return this.municipiosService.findByProvincia(idProvincia);
-}
 }

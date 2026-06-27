@@ -1,13 +1,20 @@
 import { Controller, Get, Param, Post, Body, Put, Delete, UseGuards, HttpException, HttpStatus} from '@nestjs/common';
 import { ProvinciasService} from '../services/provincias.service';
 import { JwtAuthGuard } from "../../auth/jwt-auth.guard";
+import { RolesGuard } from '../../auth/roles.guard';
+import { Roles } from '../../auth/roles.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CreateProvinciaDto } from '../dto/create-provincia.dto';
+import { UpdateProvinciaDto } from '../dto/update-provincia.dto';
 
 @Controller('api/provincias')
+@ApiBearerAuth()
+@ApiTags('provincias')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProvinciasController {
     constructor(
         private provinciasService: ProvinciasService 
      ) {}
-     @UseGuards(JwtAuthGuard)
      @Get()
   async findAll() {
     try {
@@ -18,27 +25,23 @@ export class ProvinciasController {
     }
   }
 
-     @UseGuards(JwtAuthGuard)
      @Get('by_provincia/:id')
   async findByProvincia(@Param('id') id: number) {
     return await this.provinciasService.findOne(id);
   }
-     @UseGuards(JwtAuthGuard)
      @Post()
-     async create(@Body() body: any){
-         return await this.provinciasService.create(body); 
-         // return body;
+     @Roles('Administrador')
+     async create(@Body() createProvinciaDto: CreateProvinciaDto){
+         return await this.provinciasService.create(createProvinciaDto); 
      }
-     @UseGuards(JwtAuthGuard)
      @Put(':id')
-     update(@Param('id') id: number, @Body() body: any){
-         return this.provinciasService.update(id, body);
-         // return body;
+     @Roles('Administrador')
+     update(@Param('id') id: number, @Body() updateProvinciaDto: UpdateProvinciaDto){
+         return this.provinciasService.update(id, updateProvinciaDto);
      }
-     @UseGuards(JwtAuthGuard)
      @Delete(':id')
+     @Roles('Administrador')
      delete(@Param('id') id: number){
          return this.provinciasService.delete(id);
-         //return true;
      }
 }

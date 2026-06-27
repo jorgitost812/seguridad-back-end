@@ -6,15 +6,14 @@ import { Usuario } from './../usuarios/entities/usuario.entity';
 export class MailService {
   constructor(private mailerService: MailerService) {}
 
-  async sendWelcomeEmail(xxX: string, tecnico: string) {
+  async sendWelcomeEmail(to: string, tecnico: string) {
 
     await this.mailerService.sendMail({
-      to: "luis.guerra@ltu.jovenclub.cu",
-      // from: '"Support Team" <support@example.com>', // override default from
+      to,
       subject: 'Bienvenido a nuestra aplicación!',
-      template: './welcome', // `.hbs` extension is appended automatically
-      context: { // ✏️ filling curly brackets with content
-        xxX, tecnico
+      template: './welcome',
+      context: {
+        xxX: to, tecnico
       },
     });
   }
@@ -32,15 +31,13 @@ export class MailService {
 		
   await this.mailerService.sendMail({
     to: adminJC,
-   	cc: supervisor,
-    // from: '"Support Team" <support@example.com>', // override default from
+	cc: supervisor,
     subject: 'Notificación de incidencia',
-    template: './notificacion', // `.hbs` extension is appended automatically
-    context: { // ✏️ filling curly brackets with content
-      adminJC, tecnico, supervisor, nombrejc, nombrepc, inventario, causa //causa, nombrejc, supervisor
+    template: './notificacion',
+    context: {
+      adminJC, tecnico, supervisor, nombrejc, nombrepc, inventario, causa
     },
   });
-  console.log('El correo fue enviado servicio');
   }
 
 
